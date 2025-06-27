@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { X, Mail, Chrome, Loader2 } from 'lucide-react';
+import { X, Mail, Key, User, Loader2, Chrome } from 'lucide-react';
 import { useAuth } from '../hooks/useAuth';
 
 interface AuthModalProps {
@@ -7,136 +7,213 @@ interface AuthModalProps {
   onClose: () => void;
 }
 
+type AuthView = 'sign-in' | 'sign-up';
+
 export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
-  const [isSignUp, setIsSignUp] = useState(false);
+  const [view, setView] = useState<AuthView>('sign-in');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [loading, setLoading] = useState(false);
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [loading, setLoading] = useState<null | 'email' | 'google'>(null);
   const [error, setError] = useState('');
-  
+  const [successMessage, setSuccessMessage] = useState('');
+
   const { signInWithEmail, signUpWithEmail, signInWithGoogle } = useAuth();
 
   if (!isOpen) return null;
+  
+  const resetState = () => {
+    setError('');
+    setEmail('');
+    setPassword('');
+    setConfirmPassword('');
+    setLoading(null);
+    setSuccessMessage('');
+  };
+
+  const handleSwitchView = (newView: AuthView) => {
+    resetState();
+    setView(newView);
+  };
 
   const handleEmailAuth = async (e: React.FormEvent) => {
     e.preventDefault();
-    setLoading(true);
+    setLoading('email');
     setError('');
+    setSuccessMessage('');
 
-    const { error } = isSignUp 
-      ? await signUpWithEmail(email, password)
-      : await signInWithEmail(email, password);
-
-    if (error) {
-      setError(error.message);
+    if (view === 'sign-up') {
+      if (password !== confirmPassword) {
+        setError('Passwords do not match.');
+        setLoading(null);
+        return;
+      }
+      const { error } = await signUpWithEmail(email, password);
+      if (error) {
+        setError(error.message);
+      } else {
+        setSuccessMessage('Success! Please check your email for a confirmation link.');
+      }
     } else {
-      onClose();
+      const { error } = await signInWithEmail(email, password);
+      if (error) {
+        setError(error.message);
+      } else {
+        onClose();
+      }
     }
-    setLoading(false);
+
+    setLoading(null);
   };
 
   const handleGoogleAuth = async () => {
-    setLoading(true);
+    setLoading('google');
     setError('');
-    
     const { error } = await signInWithGoogle();
     if (error) {
       setError(error.message);
+      setLoading(null);
     }
-    setLoading(false);
   };
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-xl shadow-2xl max-w-md w-full p-6">
-        <div className="flex items-center justify-between mb-6">
-          <h2 className="text-2xl font-bold text-gray-900">
-            {isSignUp ? 'Create Account' : 'Sign In'}
-          </h2>
+    <div className="fixed inset-0 bg-primary/50 backdrop-blur-sm flex items-center justify-center z-50 p-4 transition-opacity duration-300">
+      <div className="bg-white rounded-xl shadow-2xl max-w-sm w-full transform transition-all duration-300 scale-100">
+        <div className="relative">
           <button
             onClick={onClose}
-            className="text-gray-400 hover:text-gray-600 transition-colors"
+            className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 transition-colors"
           >
             <X className="w-6 h-6" />
           </button>
-        </div>
+          
+          <div className="p-8">
+            <div className="flex border-b mb-6">
+              <TabButton
+                title="Sign In"
+                isActive={view === 'sign-in'}
+                onClick={() => handleSwitchView('sign-in')}
+              />
+              <TabButton
+                title="Sign Up"
+                isActive={view === 'sign-up'}
+                onClick={() => handleSwitchView('sign-up')}
+              />
+            </div>
 
-        {error && (
-          <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm">
-            {error}
-          </div>
-        )}
+            <div className="mb-6">
+              <button
+                onClick={handleGoogleAuth}
+                disabled={!!loading}
+                className="w-full flex items-center justify-center px-4 py-2.5 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors duration-200 disabled:opacity-50 font-semibold text-secondary"
+              >
+                {loading === 'google' ? (
+                  <Loader2 className="w-5 h-5 animate-spin" />
+                ) : (
+                  <>
+                    <Chrome className="w-5 h-5 mr-3 text-red-500" />
+                    Continue with Google
+                  </>
+                )}
+              </button>
+            </div>
 
-        <form onSubmit={handleEmailAuth} className="space-y-4 mb-4">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Email
-            </label>
-            <input
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              required
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Password
-            </label>
-            <input
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              required
-              minLength={6}
-            />
-          </div>
-          <button
-            type="submit"
-            disabled={loading}
-            className="w-full flex items-center justify-center px-4 py-2 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-lg hover:from-blue-700 hover:to-purple-700 transition-all duration-200 disabled:opacity-50"
-          >
-            {loading ? (
-              <Loader2 className="w-4 h-4 animate-spin" />
-            ) : (
-              <>
-                <Mail className="w-4 h-4 mr-2" />
-                {isSignUp ? 'Create Account' : 'Sign In'}
-              </>
+            <div className="relative mb-6">
+              <div className="absolute inset-0 flex items-center">
+                <div className="w-full border-t border-gray-200" />
+              </div>
+              <div className="relative flex justify-center text-sm">
+                <span className="px-2 bg-white text-gray-400">OR</span>
+              </div>
+            </div>
+
+            {error && (
+              <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm animate-shake">
+                {error}
+              </div>
             )}
-          </button>
-        </form>
+            
+            {successMessage && (
+              <div className="mb-4 p-3 bg-green-50 border border-green-200 rounded-lg text-green-700 text-sm">
+                {successMessage}
+              </div>
+            )}
 
-        <div className="relative mb-4">
-          <div className="absolute inset-0 flex items-center">
-            <div className="w-full border-t border-gray-300" />
+            {!successMessage && (
+              <form onSubmit={handleEmailAuth} className="space-y-4">
+                <Input
+                  id="email"
+                  type="email"
+                  placeholder="name@example.com"
+                  Icon={Mail}
+                  value={email}
+                  onChange={e => setEmail(e.target.value)}
+                />
+                <Input
+                  id="password"
+                  type="password"
+                  placeholder="••••••••"
+                  Icon={Key}
+                  value={password}
+                  onChange={e => setPassword(e.target.value)}
+                />
+                {view === 'sign-up' && (
+                  <Input
+                    id="confirmPassword"
+                    type="password"
+                    placeholder="Confirm password"
+                    Icon={Key}
+                    value={confirmPassword}
+                    onChange={e => setConfirmPassword(e.target.value)}
+                  />
+                )}
+                <button
+                  type="submit"
+                  disabled={!!loading}
+                  className="w-full flex items-center justify-center px-4 py-2.5 bg-accent hover:bg-accent-focus text-white font-semibold rounded-lg transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {loading === 'email' ? (
+                    <Loader2 className="w-5 h-5 animate-spin" />
+                  ) : (
+                    <>
+                      <User className="w-5 h-5 mr-2" />
+                      {view === 'sign-up' ? 'Create Account' : 'Sign In'}
+                    </>
+                  )}
+                </button>
+              </form>
+            )}
           </div>
-          <div className="relative flex justify-center text-sm">
-            <span className="px-2 bg-white text-gray-500">or</span>
-          </div>
-        </div>
-
-        <button
-          onClick={handleGoogleAuth}
-          disabled={loading}
-          className="w-full flex items-center justify-center px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors duration-200 disabled:opacity-50"
-        >
-          <Chrome className="w-4 h-4 mr-2" />
-          Continue with Google
-        </button>
-
-        <div className="mt-4 text-center text-sm text-gray-600">
-          {isSignUp ? 'Already have an account?' : "Don't have an account?"}{' '}
-          <button
-            onClick={() => setIsSignUp(!isSignUp)}
-            className="text-blue-600 hover:text-blue-700 font-medium"
-          >
-            {isSignUp ? 'Sign In' : 'Sign Up'}
-          </button>
         </div>
       </div>
     </div>
   );
 };
+
+const TabButton: React.FC<{ title: string; isActive: boolean; onClick: () => void }> = ({ title, isActive, onClick }) => (
+  <button
+    onClick={onClick}
+    className={`w-1/2 pb-3 text-center font-semibold transition-colors ${
+      isActive ? 'text-accent border-b-2 border-accent' : 'text-gray-400 hover:text-gray-600'
+    }`}
+  >
+    {title}
+  </button>
+);
+
+const Input: React.FC<{ id: string, type: string, placeholder: string, Icon: React.ElementType, value: string, onChange: (e: React.ChangeEvent<HTMLInputElement>) => void }> = 
+  ({ id, type, placeholder, Icon, value, onChange }) => (
+  <div className="relative">
+    <Icon className="absolute top-1/2 left-3 -translate-y-1/2 w-5 h-5 text-gray-400" />
+    <input
+      id={id}
+      type={type}
+      placeholder={placeholder}
+      value={value}
+      onChange={onChange}
+      className="w-full pl-10 pr-3 py-2.5 border border-gray-200 rounded-lg focus:ring-2 focus:ring-accent/50 focus:border-transparent transition-shadow"
+      required
+      minLength={type === 'password' ? 6 : undefined}
+    />
+  </div>
+);

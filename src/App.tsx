@@ -1,5 +1,5 @@
-import React, { useState, useCallback } from 'react';
-import { Compass as Compress, Loader2, Shield, Crown, LogIn } from 'lucide-react';
+import React, { useState, useCallback, useEffect } from 'react';
+import { Compass as Compress, Loader2, Shield, Crown, LogIn, CheckCircle, X } from 'lucide-react';
 import { ImageFile, CompressionSettings, FREEMIUM_LIMITS } from './types';
 import { ImageUpload } from './components/ImageUpload';
 import { CompressionSettingsPanel } from './components/CompressionSettings';
@@ -10,6 +10,7 @@ import { UserMenu } from './components/UserMenu';
 import { AdPlaceholder } from './components/AdPlaceholder';
 import { processImage, checkFreemiumLimits } from './utils/imageProcessor';
 import { useAuth } from './hooks/useAuth';
+import { supabase } from './lib/supabase';
 
 function App() {
   const [images, setImages] = useState<ImageFile[]>([]);
@@ -17,6 +18,7 @@ function App() {
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [showUpgradeModal, setShowUpgradeModal] = useState(false);
   const [upgradeReason, setUpgradeReason] = useState('');
+  const [showUpgradeSuccess, setShowUpgradeSuccess] = useState(false);
   const [settings, setSettings] = useState<CompressionSettings>({
     quality: 80,
     maxWidth: 0,
@@ -24,6 +26,29 @@ function App() {
   });
 
   const { user, isPremium, loading } = useAuth();
+
+  // Handle upgrade success callback
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.get('upgrade_success') === 'true') {
+      // Clean up URL
+      window.history.replaceState({}, document.title, window.location.pathname);
+      
+      // Show success message
+      setShowUpgradeSuccess(true);
+      
+      // Refresh the session to get updated profile data
+      const refreshSession = async () => {
+        await supabase.auth.refreshSession();
+        // The useAuth hook will automatically update when the session changes
+      };
+      
+      refreshSession();
+      
+      // Hide success message after 5 seconds
+      setTimeout(() => setShowUpgradeSuccess(false), 5000);
+    }
+  }, []);
 
   const handleImagesAdd = useCallback((newImages: ImageFile[]) => {
     setImages(prev => [...prev, ...newImages]);
@@ -112,25 +137,25 @@ function App() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50">
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-blue-50 font-sans">
       {/* Sidebar Ad for Large Screens */}
       <div className="hidden xl:block fixed right-4 top-1/2 transform -translate-y-1/2 z-10">
         <AdPlaceholder id="ad-sidebar" width={160} height={600} />
       </div>
 
       {/* Header */}
-      <header className="bg-white shadow-sm border-b border-gray-100">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+      <header className="bg-white/80 backdrop-blur-md shadow-sm sticky top-0 z-20">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center">
-              <div className="w-12 h-12 bg-gradient-to-br from-blue-600 to-purple-600 rounded-xl flex items-center justify-center mr-4">
+              <div className="w-12 h-12 bg-accent rounded-xl flex items-center justify-center mr-4">
                 <Compress className="w-7 h-7 text-white" />
               </div>
               <div>
-                <h1 className="text-2xl font-bold text-gray-900">
+                <h1 className="text-2xl font-bold text-primary">
                   SlimSnap
                 </h1>
-                <p className="text-gray-600 text-sm">
+                <p className="text-secondary text-sm font-medium">
                   Fast Image Compressor & Resizer
                 </p>
               </div>
@@ -142,7 +167,7 @@ function App() {
                   {!isPremium && (
                     <button
                       onClick={() => handleUpgradeNeeded('Unlock all premium features with unlimited uploads, full quality control, and ad-free experience.')}
-                      className="flex items-center px-4 py-2 bg-gradient-to-r from-yellow-500 to-orange-500 text-white rounded-lg hover:from-yellow-600 hover:to-orange-600 transition-all duration-200 transform hover:scale-105"
+                      className="flex items-center px-4 py-2 bg-gradient-to-r from-yellow-400 to-orange-500 text-white rounded-lg hover:from-yellow-500 hover:to-orange-600 transition-all duration-200 transform hover:scale-105 shadow-sm"
                     >
                       <Crown className="w-4 h-4 mr-2" />
                       Go Premium
@@ -153,7 +178,7 @@ function App() {
               ) : (
                 <button
                   onClick={() => setShowAuthModal(true)}
-                  className="flex items-center px-4 py-2 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-lg hover:from-blue-700 hover:to-purple-700 transition-all duration-200 transform hover:scale-105"
+                  className="flex items-center px-4 py-2 bg-accent hover:bg-accent-focus text-white rounded-lg transition-all duration-200 transform hover:scale-105"
                 >
                   <LogIn className="w-4 h-4 mr-2" />
                   Sign In
@@ -163,6 +188,29 @@ function App() {
           </div>
         </div>
       </header>
+
+      {/* Upgrade Success Message */}
+      {showUpgradeSuccess && (
+        <div className="bg-green-50 border border-green-200 rounded-lg p-4 mx-4 sm:mx-6 lg:mx-8 mt-4">
+          <div className="flex items-center">
+            <CheckCircle className="w-5 h-5 text-green-500 mr-3" />
+            <div>
+              <h3 className="text-sm font-medium text-green-800">
+                Welcome to Premium! 🎉
+              </h3>
+              <p className="text-sm text-green-700 mt-1">
+                Your account has been upgraded. You now have access to all premium features including unlimited uploads, full quality control, and ad-free experience.
+              </p>
+            </div>
+            <button
+              onClick={() => setShowUpgradeSuccess(false)}
+              className="ml-auto text-green-500 hover:text-green-700"
+            >
+              <X className="w-5 h-5" />
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* Main Content */}
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -200,7 +248,7 @@ function App() {
                   disabled={!canProcess}
                   className={`w-full flex items-center justify-center px-6 py-4 rounded-xl text-white font-semibold transition-all duration-200 transform ${
                     canProcess
-                      ? 'bg-gradient-to-r from-green-600 to-teal-600 hover:from-green-700 hover:to-teal-700 hover:scale-105 shadow-lg hover:shadow-xl'
+                      ? 'bg-gradient-to-r from-green-600 to-teal-600 hover:from-green-700 hover:to-teal-700 hover:scale-105 shadow-lg'
                       : 'bg-gray-400 cursor-not-allowed'
                   }`}
                 >

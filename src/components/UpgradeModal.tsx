@@ -1,5 +1,6 @@
 import React from 'react';
 import { X, Crown, Check } from 'lucide-react';
+import { useAuth } from '../hooks/useAuth';
 
 interface UpgradeModalProps {
   isOpen: boolean;
@@ -12,11 +13,30 @@ export const UpgradeModal: React.FC<UpgradeModalProps> = ({
   onClose, 
   reason 
 }) => {
+  const { user } = useAuth();
+
   if (!isOpen) return null;
 
   const handleUpgrade = () => {
-    // In a real app, this would redirect to Stripe checkout
-    window.open('https://stripe.com', '_blank');
+    if (!user) {
+      alert('Please sign in first to upgrade to Premium');
+      return;
+    }
+
+    // Lemon Squeezy hosted checkout URL with custom data
+    const checkoutUrl = new URL('https://slimsnap.lemonsqueezy.com/buy/e962aeeb-a5b0-48a4-9f07-f329e23bda81');
+    
+    // Add custom data to pass user information
+    checkoutUrl.searchParams.append('checkout[custom][user_id]', user.id);
+    checkoutUrl.searchParams.append('checkout[custom][email]', user.email || '');
+    
+    // Add redirect URL for after successful payment
+    checkoutUrl.searchParams.append('checkout[success_url]', 
+      `${window.location.origin}?upgrade_success=true`
+    );
+
+    // Open checkout in same window
+    window.location.href = checkoutUrl.toString();
   };
 
   return (
@@ -78,9 +98,10 @@ export const UpgradeModal: React.FC<UpgradeModalProps> = ({
           </button>
           <button
             onClick={handleUpgrade}
-            className="flex-1 px-4 py-2 bg-gradient-to-r from-yellow-500 to-orange-500 text-white rounded-lg hover:from-yellow-600 hover:to-orange-600 transition-all duration-200 transform hover:scale-105"
+            disabled={!user}
+            className="flex-1 px-4 py-2 bg-gradient-to-r from-yellow-500 to-orange-500 text-white rounded-lg hover:from-yellow-600 hover:to-orange-600 transition-all duration-200 transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
           >
-            Upgrade Now
+            {user ? 'Upgrade Now' : 'Sign In First'}
           </button>
         </div>
       </div>
