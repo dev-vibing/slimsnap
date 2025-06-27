@@ -15,4 +15,5 @@ export interface UserProfile {
   is_premium: boolean;
   stripe_customer_id?: string;
   subscription_status?: string;
+  lemon_order_id?: string;
 }
