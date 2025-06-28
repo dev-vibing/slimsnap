@@ -43,42 +43,36 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
     setSuccessMessage('');
 
     if (view === 'sign-up') {
+      // Validate password confirmation for sign-up
       if (password !== confirmPassword) {
         setError('Passwords do not match.');
         setLoading(null);
         return;
       }
       
-      // First, try to sign in with the credentials to check if user exists
-      const { error: signInError } = await signInWithEmail(email, password);
-      
-      if (!signInError) {
-        // User exists and credentials are correct - just show error, don't sign them in
-        setError('An account with this email already exists. Please use the Sign In tab instead.');
-        setLoading(null);
-        return;
-      }
-      
-      // If sign in failed due to invalid credentials, check if it's because of wrong password
-      if (signInError.message.toLowerCase().includes('invalid login credentials') || 
-          signInError.message.toLowerCase().includes('invalid email or password')) {
-        // User might exist but with different password
-        setError('An account with this email already exists. Please sign in instead or use a different email.');
-        setLoading(null);
-        return;
-      }
-      
-      // If we get here, the user doesn't exist, so proceed with signup
+      // Call signUp directly for sign-up flow
       const { error } = await signUpWithEmail(email, password);
       if (error) {
-        setError(error.message);
+        // Handle specific sign-up errors
+        if (error.message.toLowerCase().includes('user already registered')) {
+          setError('An account with this email already exists. Please use the Sign In tab instead.');
+        } else {
+          setError(error.message);
+        }
       } else {
         setSuccessMessage('Success! Please check your email for a confirmation link.');
       }
     } else {
+      // Call signInWithPassword directly for sign-in flow
       const { error } = await signInWithEmail(email, password);
       if (error) {
-        setError(error.message);
+        // Handle specific sign-in errors
+        if (error.message.toLowerCase().includes('invalid login credentials') || 
+            error.message.toLowerCase().includes('invalid email or password')) {
+          setError('Invalid email or password. Please check your credentials and try again.');
+        } else {
+          setError(error.message);
+        }
       } else {
         onClose();
       }
