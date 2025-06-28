@@ -46,29 +46,41 @@ export const supabase = (!supabaseUrl || !supabaseAnonKey)
         auth: {
           persistSession: true,
           autoRefreshToken: true,
+          storage: localStorage,
+          storageKey: 'slimsnap.auth.token',
         },
       });
 
       if (typeof window !== 'undefined') {
-        const storageKey = 'sb-sl-session';
+        const tokenKey = 'slimsnap.auth.token';
 
         client.auth.onAuthStateChange((_event, session) => {
           if (session) {
-            localStorage.setItem(storageKey, JSON.stringify(session));
+            const tokens = {
+              access_token: session.access_token,
+              refresh_token: session.refresh_token,
+            };
+            localStorage.setItem(tokenKey, JSON.stringify(tokens));
           } else {
-            localStorage.removeItem(storageKey);
+            localStorage.removeItem(tokenKey);
           }
         });
 
         (async () => {
-          const { data: { session } } = await client.auth.getSession();
+          const {
+            data: { session },
+          } = await client.auth.getSession();
           if (!session) {
-            const raw = localStorage.getItem(storageKey);
+            const raw = localStorage.getItem(tokenKey);
             if (raw) {
               try {
-                await client.auth.setSession(JSON.parse(raw));
+                const { access_token, refresh_token } = JSON.parse(raw);
+                if (access_token && refresh_token) {
+                  await client.auth.setSession({ access_token, refresh_token });
+                }
               } catch (err) {
-                console.error('Failed to restore session from storage', err);
+                console.error('Failed to restore auth tokens', err);
+                localStorage.removeItem(tokenKey);
               }
             }
           }
