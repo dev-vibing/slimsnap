@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { X, Mail, Key, User, Loader2, Chrome } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { X, Mail, Key, User, Loader2, Chrome, Sparkles } from 'lucide-react';
 import { useAuth } from '../hooks/useAuth';
 
 interface AuthModalProps {
@@ -19,6 +19,26 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
   const [successMessage, setSuccessMessage] = useState('');
 
   const { signInWithEmail, signUpWithEmail, signInWithGoogle } = useAuth();
+
+  // Reset state when modal opens
+  useEffect(() => {
+    if (isOpen) {
+      resetState();
+    }
+  }, [isOpen]);
+
+  // Timeout fallback to prevent infinite loading
+  useEffect(() => {
+    if (loading) {
+      const timeoutId = setTimeout(() => {
+        console.warn('Auth timeout reached, clearing loading state');
+        setLoading(null);
+        setError('Request timed out. Please try again.');
+      }, 10000); // 10 second timeout
+
+      return () => clearTimeout(timeoutId);
+    }
+  }, [loading]);
 
   if (!isOpen) return null;
   
@@ -42,25 +62,34 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
     setError('');
     setSuccessMessage('');
 
-    if (view === 'sign-up') {
-      if (password !== confirmPassword) {
-        setError('Passwords do not match.');
-        setLoading(null);
-        return;
-      }
-      const { error } = await signUpWithEmail(email, password);
-      if (error) {
-        setError(error.message);
+    try {
+      if (view === 'sign-up') {
+        if (password !== confirmPassword) {
+          setError('Passwords do not match.');
+          setLoading(null);
+          return;
+        }
+        const { error } = await signUpWithEmail(email, password);
+        if (error) {
+          setError(error.message);
+        } else {
+          setSuccessMessage('Success! Please check your email for a confirmation link.');
+        }
       } else {
-        setSuccessMessage('Success! Please check your email for a confirmation link.');
+        const { error } = await signInWithEmail(email, password);
+        if (error) {
+          setError(error.message);
+        } else {
+          // Clear loading state before closing
+          setLoading(null);
+          resetState();
+          onClose();
+          return; // Exit early to avoid setting loading to null again
+        }
       }
-    } else {
-      const { error } = await signInWithEmail(email, password);
-      if (error) {
-        setError(error.message);
-      } else {
-        onClose();
-      }
+    } catch (err: any) {
+      console.error('Auth error:', err);
+      setError(err.message || 'An unexpected error occurred. Please try again.');
     }
 
     setLoading(null);
@@ -69,26 +98,51 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
   const handleGoogleAuth = async () => {
     setLoading('google');
     setError('');
-    const { error } = await signInWithGoogle();
-    if (error) {
-      setError(error.message);
+    
+    try {
+      const { error } = await signInWithGoogle();
+      if (error) {
+        setError(error.message);
+        setLoading(null);
+      } else {
+        // Google OAuth redirects, so we don't need to close manually
+        // The page will redirect and the modal will unmount
+        console.log('Google auth initiated successfully');
+      }
+    } catch (err: any) {
+      console.error('Google auth error:', err);
+      setError(err.message || 'Failed to sign in with Google. Please try again.');
       setLoading(null);
     }
   };
 
   return (
-    <div className="fixed inset-0 bg-primary/50 backdrop-blur-sm flex items-center justify-center z-50 p-4 transition-opacity duration-300">
-      <div className="bg-white rounded-xl shadow-2xl max-w-sm w-full transform transition-all duration-300 scale-100">
+    <div className="fixed inset-0 bg-neutral-900/50 backdrop-blur-sm flex items-center justify-center z-50 p-4 transition-opacity duration-300">
+      <div className="card-glass max-w-md w-full transform transition-all duration-300 scale-100 shadow-2xl">
         <div className="relative">
           <button
             onClick={onClose}
-            className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 transition-colors"
+            className="absolute top-6 right-6 text-neutral-400 hover:text-neutral-600 transition-colors p-2 hover:bg-neutral-100 rounded-xl"
           >
-            <X className="w-6 h-6" />
+            <X className="w-5 h-5" />
           </button>
           
           <div className="p-8">
-            <div className="flex border-b mb-6">
+            {/* Header */}
+            <div className="text-center mb-8">
+              <div className="w-16 h-16 gradient-brand rounded-3xl mx-auto mb-4 flex items-center justify-center shadow-lg">
+                <Sparkles className="w-8 h-8 text-white" />
+              </div>
+              <h2 className="text-2xl font-bold text-neutral-800 mb-2">
+                Welcome to SlimSnap
+              </h2>
+              <p className="text-neutral-600">
+                {view === 'sign-in' ? 'Sign in to your account' : 'Create your account'}
+              </p>
+            </div>
+
+            {/* Tab Buttons */}
+            <div className="flex border border-neutral-200 rounded-2xl p-1 mb-8">
               <TabButton
                 title="Sign In"
                 isActive={view === 'sign-in'}
@@ -101,11 +155,12 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
               />
             </div>
 
+            {/* Google Auth */}
             <div className="mb-6">
               <button
                 onClick={handleGoogleAuth}
                 disabled={!!loading}
-                className="w-full flex items-center justify-center px-4 py-2.5 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors duration-200 disabled:opacity-50 font-semibold text-secondary"
+                className="w-full flex items-center justify-center px-6 py-4 border border-neutral-200 rounded-2xl hover:bg-neutral-50 transition-all duration-200 disabled:opacity-50 font-medium text-neutral-700 hover:scale-105 transform"
               >
                 {loading === 'google' ? (
                   <Loader2 className="w-5 h-5 animate-spin" />
@@ -118,27 +173,30 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
               </button>
             </div>
 
+            {/* Divider */}
             <div className="relative mb-6">
               <div className="absolute inset-0 flex items-center">
-                <div className="w-full border-t border-gray-200" />
+                <div className="w-full border-t border-neutral-200" />
               </div>
               <div className="relative flex justify-center text-sm">
-                <span className="px-2 bg-white text-gray-400">OR</span>
+                <span className="px-4 bg-white text-neutral-500 font-medium">OR</span>
               </div>
             </div>
 
+            {/* Error/Success Messages */}
             {error && (
-              <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm animate-shake">
+              <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-2xl text-red-700 text-sm animate-slide-up">
                 {error}
               </div>
             )}
             
             {successMessage && (
-              <div className="mb-4 p-3 bg-green-50 border border-green-200 rounded-lg text-green-700 text-sm">
+              <div className="mb-6 p-4 bg-success-50 border border-success-200 rounded-2xl text-success-700 text-sm animate-slide-up">
                 {successMessage}
               </div>
             )}
 
+            {/* Email Form */}
             {!successMessage && (
               <form onSubmit={handleEmailAuth} className="space-y-4">
                 <Input
@@ -170,7 +228,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
                 <button
                   type="submit"
                   disabled={!!loading}
-                  className="w-full flex items-center justify-center px-4 py-2.5 bg-accent hover:bg-accent-focus text-white font-semibold rounded-lg transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="w-full btn-primary flex items-center justify-center py-4 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
                 >
                   {loading === 'email' ? (
                     <Loader2 className="w-5 h-5 animate-spin" />
@@ -193,27 +251,36 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
 const TabButton: React.FC<{ title: string; isActive: boolean; onClick: () => void }> = ({ title, isActive, onClick }) => (
   <button
     onClick={onClick}
-    className={`w-1/2 pb-3 text-center font-semibold transition-colors ${
-      isActive ? 'text-accent border-b-2 border-accent' : 'text-gray-400 hover:text-gray-600'
+    className={`flex-1 py-3 text-center font-semibold transition-all duration-200 rounded-xl ${
+      isActive 
+        ? 'text-white gradient-brand shadow-md' 
+        : 'text-neutral-600 hover:text-neutral-800 hover:bg-neutral-100'
     }`}
   >
     {title}
   </button>
 );
 
-const Input: React.FC<{ id: string, type: string, placeholder: string, Icon: React.ElementType, value: string, onChange: (e: React.ChangeEvent<HTMLInputElement>) => void }> = 
-  ({ id, type, placeholder, Icon, value, onChange }) => (
+const Input: React.FC<{ 
+  id: string; 
+  type: string; 
+  placeholder: string; 
+  Icon: React.ElementType; 
+  value: string; 
+  onChange: (e: React.ChangeEvent<HTMLInputElement>) => void 
+}> = ({ id, type, placeholder, Icon, value, onChange }) => (
   <div className="relative">
-    <Icon className="absolute top-1/2 left-3 -translate-y-1/2 w-5 h-5 text-gray-400" />
+    <div className="absolute left-4 top-1/2 transform -translate-y-1/2 text-neutral-400">
+      <Icon className="w-5 h-5" />
+    </div>
     <input
       id={id}
       type={type}
       placeholder={placeholder}
       value={value}
       onChange={onChange}
-      className="w-full pl-10 pr-3 py-2.5 border border-gray-200 rounded-lg focus:ring-2 focus:ring-accent/50 focus:border-transparent transition-shadow"
+      className="w-full pl-12 pr-4 py-4 border border-neutral-200 rounded-2xl focus:ring-2 focus:ring-brand-500 focus:border-transparent transition-all duration-200 placeholder-neutral-400"
       required
-      minLength={type === 'password' ? 6 : undefined}
     />
   </div>
 );

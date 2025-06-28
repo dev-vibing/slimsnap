@@ -1,5 +1,5 @@
 import React from 'react';
-import { Download, Archive, Trash2, CheckCircle, Lock } from 'lucide-react';
+import { Download, Archive, CheckCircle, Lock, Zap } from 'lucide-react';
 import JSZip from 'jszip';
 import { ImageFile } from '../types';
 import { formatFileSize, calculateSavings } from '../utils/imageProcessor';
@@ -32,9 +32,7 @@ export const ProcessedResults: React.FC<ProcessedResultsProps> = ({
 
   const downloadAllAsZip = async () => {
     if (!isPremium) {
-      onUpgradeNeeded(
-        'ZIP batch downloads are a Premium feature. Upgrade to download all your compressed images at once.'
-      );
+      onUpgradeNeeded('Download all images as a ZIP file with Premium!');
       return;
     }
 
@@ -49,7 +47,7 @@ export const ProcessedResults: React.FC<ProcessedResultsProps> = ({
     const content = await zip.generateAsync({ type: 'blob' });
     const link = document.createElement('a');
     link.href = URL.createObjectURL(content);
-    link.download = 'slimsnap_compressed_images.zip';
+    link.download = 'compressed_images.zip';
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
@@ -62,87 +60,91 @@ export const ProcessedResults: React.FC<ProcessedResultsProps> = ({
   const totalSavings = calculateSavings(totalOriginalSize, totalCompressedSize);
 
   return (
-    <div className="bg-white rounded-xl shadow-lg border border-gray-100">
-      <div className="p-6 border-b border-gray-100">
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-          <div>
-            <h2 className="text-xl font-semibold text-gray-900 mb-2">
-              Processed Images ({processedImages.length})
-            </h2>
-            <div className="flex items-center text-sm text-gray-600">
-              <CheckCircle className="w-4 h-4 text-green-500 mr-2" />
-              Total savings: {formatFileSize(totalOriginalSize - totalCompressedSize)} ({totalSavings}%)
-            </div>
+    <div className="space-y-6">
+      {/* Summary */}
+      <div className="p-4 bg-gradient-to-r from-success-50 to-green-50 rounded-xl border border-success-200">
+        <div className="flex items-center">
+          <div className="w-10 h-10 gradient-success rounded-xl flex items-center justify-center mr-3">
+            <Zap className="w-5 h-5 text-white" />
           </div>
-          <div className="flex gap-2">
-            <button
-              onClick={downloadAllAsZip}
-              className={`flex items-center px-4 py-2 rounded-lg transition-all duration-200 transform hover:scale-105 ${
-                isPremium
-                  ? 'bg-gradient-to-r from-blue-600 to-purple-600 text-white hover:from-blue-700 hover:to-purple-700'
-                  : 'bg-gray-100 text-gray-500 cursor-not-allowed'
-              }`}
-              disabled={!isPremium}
-            >
-              {isPremium ? (
-                <Archive className="w-4 h-4 mr-2" />
-              ) : (
-                <Lock className="w-4 h-4 mr-2" />
-              )}
-              Download ZIP {!isPremium && '(Premium)'}
-            </button>
-            <button
-              onClick={onClearAll}
-              className="flex items-center px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors duration-200"
-            >
-              <Trash2 className="w-4 h-4 mr-2" />
-              Clear All
-            </button>
+          <div>
+            <h3 className="font-semibold text-success-800">Great job! 🎉</h3>
+            <p className="text-success-700 text-sm">
+              Saved {formatFileSize(totalOriginalSize - totalCompressedSize)} ({totalSavings}% smaller)
+            </p>
           </div>
         </div>
       </div>
 
-      <div className="p-6">
-        <div className="grid gap-4">
-          {processedImages.map((image) => {
-            const savings = calculateSavings(image.originalSize, image.processed!.size);
-            
-            return (
-              <div
-                key={image.id}
-                className="flex items-center bg-gray-50 rounded-lg p-4 hover:bg-gray-100 transition-colors duration-200"
-              >
-                <img
-                  src={image.preview}
-                  alt="Processed"
-                  className="w-16 h-16 object-cover rounded-lg mr-4"
-                />
+      {/* Download All Button */}
+      {processedImages.length > 1 && (
+        <button
+          onClick={downloadAllAsZip}
+          className={`w-full py-3 px-4 rounded-xl font-medium transition-all duration-200 flex items-center justify-center ${
+            isPremium
+              ? 'gradient-brand text-white hover:scale-105'
+              : 'bg-neutral-100 text-neutral-500 cursor-not-allowed'
+          }`}
+          disabled={!isPremium}
+        >
+          {isPremium ? (
+            <Archive className="w-5 h-5 mr-2" />
+          ) : (
+            <Lock className="w-5 h-5 mr-2" />
+          )}
+          Download All as ZIP {!isPremium && '(Premium)'}
+        </button>
+      )}
+
+      {/* Individual Images */}
+      <div className="space-y-3">
+        {processedImages.map((image) => {
+          const savings = calculateSavings(image.originalSize, image.processed!.size);
+          
+          return (
+            <div
+              key={image.id}
+              className="bg-white rounded-xl border border-neutral-200 p-4 hover:shadow-md transition-shadow"
+            >
+              <div className="flex items-center space-x-4">
+                <div className="relative flex-shrink-0">
+                  <img
+                    src={image.preview}
+                    alt="Compressed"
+                    className="w-16 h-16 object-cover rounded-xl"
+                  />
+                  <div className="absolute -bottom-1 -right-1 w-5 h-5 bg-success-500 rounded-full flex items-center justify-center">
+                    <CheckCircle className="w-3 h-3 text-white" />
+                  </div>
+                </div>
+                
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium text-gray-900 truncate">
+                  <h4 className="font-medium text-neutral-800 truncate text-sm">
                     {image.file.name}
-                  </p>
-                  <div className="mt-1 flex items-center text-xs text-gray-600">
+                  </h4>
+                  <div className="flex items-center space-x-4 mt-1 text-xs text-neutral-600">
                     <span>{formatFileSize(image.originalSize)}</span>
-                    <span className="mx-2">→</span>
-                    <span className="font-medium text-green-600">
+                    <span>→</span>
+                    <span className="font-medium text-success-600">
                       {formatFileSize(image.processed!.size)}
                     </span>
-                    <span className="ml-2 px-2 py-1 bg-green-100 text-green-800 rounded-full">
+                    <span className="px-2 py-1 bg-success-100 text-success-800 rounded-full font-medium">
                       -{savings}%
                     </span>
                   </div>
                 </div>
+                
                 <button
                   onClick={() => downloadImage(image)}
-                  className="ml-4 flex items-center px-3 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors duration-200"
+                  className="px-4 py-2 gradient-brand text-white rounded-xl font-medium text-sm hover:scale-105 transition-transform flex items-center"
                 >
                   <Download className="w-4 h-4 mr-1" />
-                  Download
+                  <span className="hidden sm:inline">Download</span>
                 </button>
               </div>
-            );
-          })}
-        </div>
+            </div>
+          );
+        })}
       </div>
     </div>
   );

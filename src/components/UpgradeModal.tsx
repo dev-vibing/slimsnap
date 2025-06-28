@@ -1,17 +1,19 @@
 import React from 'react';
-import { X, Crown, Check } from 'lucide-react';
+import { X, Crown, Check, Zap, Sparkles, Shield } from 'lucide-react';
 import { useAuth } from '../hooks/useAuth';
 
 interface UpgradeModalProps {
   isOpen: boolean;
   onClose: () => void;
   reason: string;
+  onSignInNeeded?: () => void;
 }
 
 export const UpgradeModal: React.FC<UpgradeModalProps> = ({ 
   isOpen, 
   onClose, 
-  reason 
+  reason,
+  onSignInNeeded
 }) => {
   const { user } = useAuth();
 
@@ -19,7 +21,12 @@ export const UpgradeModal: React.FC<UpgradeModalProps> = ({
 
   const handleUpgrade = () => {
     if (!user) {
-      alert('Please sign in first to upgrade to Premium');
+      if (onSignInNeeded) {
+        onSignInNeeded();
+        onClose();
+      } else {
+        alert('Please sign in first to upgrade to Premium');
+      }
       return;
     }
 
@@ -40,67 +47,80 @@ export const UpgradeModal: React.FC<UpgradeModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-xl shadow-2xl max-w-md w-full p-6">
-        <div className="flex items-center justify-between mb-6">
+    <div className="fixed inset-0 bg-neutral-900/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+      <div className="card-glass max-w-lg w-full p-8 animate-slide-up shadow-2xl">
+        <div className="flex items-center justify-between mb-8">
           <div className="flex items-center">
-            <div className="w-10 h-10 bg-gradient-to-br from-yellow-400 to-orange-500 rounded-lg flex items-center justify-center mr-3">
-              <Crown className="w-5 h-5 text-white" />
+            <div className="relative">
+              <div className="w-14 h-14 gradient-warning rounded-3xl flex items-center justify-center shadow-lg animate-glow">
+                <Crown className="w-7 h-7 text-white" />
+              </div>
+              <div className="absolute -top-1 -right-1 w-6 h-6 bg-accent-500 rounded-full flex items-center justify-center">
+                <Sparkles className="w-3 h-3 text-white" />
+              </div>
             </div>
-            <h2 className="text-2xl font-bold text-gray-900">
-              Upgrade to Premium
-            </h2>
+            <div className="ml-4">
+              <h2 className="text-2xl font-bold text-neutral-800">
+                Upgrade to Premium
+              </h2>
+              <p className="text-accent-600 font-medium">
+                Unlock unlimited possibilities
+              </p>
+            </div>
           </div>
           <button
             onClick={onClose}
-            className="text-gray-400 hover:text-gray-600 transition-colors"
+            className="p-2 text-neutral-400 hover:text-neutral-600 hover:bg-neutral-100 rounded-xl transition-colors"
           >
             <X className="w-6 h-6" />
           </button>
         </div>
 
-        <div className="mb-6">
-          <p className="text-gray-600 mb-4">{reason}</p>
+        <div className="mb-8">
+          <div className="p-4 bg-warning-50/50 border border-warning-200/50 rounded-2xl mb-6">
+            <p className="text-warning-800 font-medium">{reason}</p>
+          </div>
           
-          <div className="bg-gradient-to-br from-yellow-50 to-orange-50 rounded-lg p-4 border border-yellow-200">
-            <h3 className="font-semibold text-gray-900 mb-3">Premium Features:</h3>
-            <ul className="space-y-2 text-sm text-gray-700">
-              <li className="flex items-center">
-                <Check className="w-4 h-4 text-green-500 mr-2" />
-                Unlimited image uploads
-              </li>
-              <li className="flex items-center">
-                <Check className="w-4 h-4 text-green-500 mr-2" />
-                Full quality range (10-100%)
-              </li>
-              <li className="flex items-center">
-                <Check className="w-4 h-4 text-green-500 mr-2" />
-                No resolution limits
-              </li>
-              <li className="flex items-center">
-                <Check className="w-4 h-4 text-green-500 mr-2" />
-                ZIP batch downloads
-              </li>
-              <li className="flex items-center">
-                <Check className="w-4 h-4 text-green-500 mr-2" />
-                Ad-free experience
-              </li>
-            </ul>
+          <div className="p-6 bg-gradient-to-br from-brand-50 to-accent-50 border border-brand-200/50 rounded-3xl">
+            <div className="flex items-center mb-4">
+              <div className="w-8 h-8 gradient-brand rounded-xl flex items-center justify-center mr-3">
+                <Shield className="w-4 h-4 text-white" />
+              </div>
+              <h3 className="text-lg font-semibold text-neutral-800">Premium Features</h3>
+            </div>
+            
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              {[
+                'Unlimited image uploads',
+                'Full quality range (10-100%)',
+                'No resolution limits',
+                'ZIP batch downloads',
+                'Ad-free experience',
+                'Priority support'
+              ].map((feature, index) => (
+                <div key={index} className="flex items-center">
+                  <div className="w-5 h-5 gradient-success rounded-full flex items-center justify-center mr-3 flex-shrink-0">
+                    <Check className="w-3 h-3 text-white" />
+                  </div>
+                  <span className="text-sm text-neutral-700 font-medium">{feature}</span>
+                </div>
+              ))}
+            </div>
           </div>
         </div>
 
-        <div className="flex gap-3">
+        <div className="flex gap-4">
           <button
             onClick={onClose}
-            className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors duration-200"
+            className="flex-1 btn-secondary"
           >
             Maybe Later
           </button>
           <button
             onClick={handleUpgrade}
-            disabled={!user}
-            className="flex-1 px-4 py-2 bg-gradient-to-r from-yellow-500 to-orange-500 text-white rounded-lg hover:from-yellow-600 hover:to-orange-600 transition-all duration-200 transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
+            className="flex-1 gradient-warning text-white font-semibold py-3 px-6 rounded-2xl hover:shadow-lg hover:scale-105 transition-all duration-200 transform flex items-center justify-center"
           >
+            <Zap className="w-5 h-5 mr-2" />
             {user ? 'Upgrade Now' : 'Sign In First'}
           </button>
         </div>

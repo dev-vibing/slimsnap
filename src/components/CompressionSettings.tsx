@@ -1,5 +1,5 @@
 import React from 'react';
-import { Settings, Zap, AlertCircle } from 'lucide-react';
+import { Zap, Crown, Check } from 'lucide-react';
 import { CompressionSettings, FREEMIUM_LIMITS } from '../types';
 import { useAuth } from '../hooks/useAuth';
 
@@ -16,139 +16,139 @@ export const CompressionSettingsPanel: React.FC<CompressionSettingsProps> = ({
 }) => {
   const { isPremium } = useAuth();
 
-  const handleQualityChange = (quality: number) => {
-    if (!isPremium) {
-      if (quality < FREEMIUM_LIMITS.minQuality || quality > FREEMIUM_LIMITS.maxQuality) {
-        onUpgradeNeeded(
-          `Free users can only use quality between ${FREEMIUM_LIMITS.minQuality}% and ${FREEMIUM_LIMITS.maxQuality}%. Upgrade to Premium for full quality control (10-100%).`
-        );
-        return;
-      }
-    }
-    onSettingsChange({ ...settings, quality });
-  };
+  const presets = [
+    {
+      id: 'small',
+      name: 'Smaller Size',
+      description: 'Best for sharing',
+      quality: 60,
+      maxWidth: 1280,
+      maxHeight: 1280,
+      savings: 'Up to 70% smaller',
+      free: true,
+    },
+    {
+      id: 'balanced',
+      name: 'Balanced',
+      description: 'Good quality & size',
+      quality: 80,
+      maxWidth: 0,
+      maxHeight: 0,
+      savings: 'Up to 50% smaller',
+      free: true,
+    },
+    {
+      id: 'quality',
+      name: 'Best Quality',
+      description: 'Minimal compression',
+      quality: 95,
+      maxWidth: 0,
+      maxHeight: 0,
+      savings: 'Up to 20% smaller',
+      free: false,
+    },
+  ];
 
-  const handleMaxWidthChange = (maxWidth: number) => {
-    if (!isPremium && maxWidth > FREEMIUM_LIMITS.maxResolution) {
-      onUpgradeNeeded(
-        `Free users are limited to ${FREEMIUM_LIMITS.maxResolution}px maximum resolution. Upgrade to Premium for unlimited resolution.`
-      );
+  const handlePresetSelect = (preset: typeof presets[0]) => {
+    if (!preset.free && !isPremium) {
+      onUpgradeNeeded('Unlock premium compression settings for the best quality!');
       return;
     }
-    onSettingsChange({ ...settings, maxWidth });
+
+    onSettingsChange({
+      quality: preset.quality,
+      maxWidth: preset.maxWidth,
+      maxHeight: preset.maxHeight,
+    });
   };
 
-  const handleMaxHeightChange = (maxHeight: number) => {
-    if (!isPremium && maxHeight > FREEMIUM_LIMITS.maxResolution) {
-      onUpgradeNeeded(
-        `Free users are limited to ${FREEMIUM_LIMITS.maxResolution}px maximum resolution. Upgrade to Premium for unlimited resolution.`
-      );
-      return;
-    }
-    onSettingsChange({ ...settings, maxHeight });
+  const getCurrentPreset = () => {
+    return presets.find(preset => 
+      preset.quality === settings.quality &&
+      preset.maxWidth === settings.maxWidth &&
+      preset.maxHeight === settings.maxHeight
+    ) || presets[1]; // Default to balanced
   };
 
-  const minQuality = isPremium ? 10 : FREEMIUM_LIMITS.minQuality;
-  const maxQuality = isPremium ? 100 : FREEMIUM_LIMITS.maxQuality;
+  const currentPreset = getCurrentPreset();
 
   return (
-    <div className="bg-white rounded-xl shadow-lg p-6 border border-gray-100">
-      <div className="flex items-center mb-6">
-        <div className="w-10 h-10 bg-gradient-to-br from-green-500 to-teal-600 rounded-lg flex items-center justify-center mr-3">
-          <Settings className="w-5 h-5 text-white" />
+    <div className="space-y-6">
+      {/* Preset Options */}
+      <div>
+        <h3 className="font-medium text-neutral-700 mb-4">Choose compression level:</h3>
+        <div className="grid gap-3">
+          {presets.map((preset) => {
+            const isSelected = currentPreset.id === preset.id;
+            const isDisabled = !preset.free && !isPremium;
+            
+            return (
+              <button
+                key={preset.id}
+                onClick={() => handlePresetSelect(preset)}
+                disabled={isDisabled}
+                className={`relative p-4 rounded-xl border-2 text-left transition-all duration-200 ${
+                  isSelected
+                    ? 'border-brand-500 bg-brand-50'
+                    : isDisabled
+                    ? 'border-neutral-200 bg-neutral-50 opacity-60 cursor-not-allowed'
+                    : 'border-neutral-200 bg-white hover:border-brand-300 hover:bg-brand-50/50'
+                }`}
+              >
+                <div className="flex items-start justify-between">
+                  <div className="flex-1">
+                    <div className="flex items-center mb-1">
+                      <h4 className="font-medium text-neutral-800">{preset.name}</h4>
+                      {!preset.free && (
+                        <Crown className="w-4 h-4 ml-2 text-orange-500" />
+                      )}
+                    </div>
+                    <p className="text-sm text-neutral-600 mb-2">{preset.description}</p>
+                    <div className="flex items-center">
+                      <Zap className="w-4 h-4 mr-1 text-success-500" />
+                      <span className="text-sm font-medium text-success-600">{preset.savings}</span>
+                    </div>
+                  </div>
+                  
+                  {isSelected && (
+                    <div className="w-6 h-6 gradient-brand rounded-full flex items-center justify-center ml-3">
+                      <Check className="w-4 h-4 text-white" />
+                    </div>
+                  )}
+                </div>
+                
+                {isDisabled && (
+                  <div className="absolute inset-0 flex items-center justify-center bg-white/80 rounded-xl">
+                    <div className="text-center">
+                      <Crown className="w-8 h-8 text-orange-500 mx-auto mb-2" />
+                      <p className="text-sm font-medium text-neutral-700">Premium Only</p>
+                    </div>
+                  </div>
+                )}
+              </button>
+            );
+          })}
         </div>
-        <h2 className="text-xl font-semibold text-gray-900">Compression Settings</h2>
       </div>
 
-      <div className="space-y-6">
-        {/* Quality Slider */}
-        <div>
-          <div className="flex items-center justify-between mb-3">
-            <label className="text-sm font-medium text-gray-700">
-              Quality
-            </label>
-            <div className="flex items-center bg-gray-100 rounded-lg px-3 py-1">
-              <Zap className="w-4 h-4 text-yellow-500 mr-1" />
-              <span className="text-sm font-semibold text-gray-900">
-                {settings.quality}%
-              </span>
-            </div>
-          </div>
-          <input
-            type="range"
-            min={minQuality}
-            max={maxQuality}
-            value={Math.max(minQuality, Math.min(maxQuality, settings.quality))}
-            onChange={(e) => handleQualityChange(Number(e.target.value))}
-            className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer slider"
-            style={{
-              background: `linear-gradient(to right, #ef4444 0%, #f59e0b 50%, #10b981 100%)`
-            }}
-          />
-          <div className="flex justify-between text-xs text-gray-500 mt-1">
-            <span>Lower quality ({minQuality}%)</span>
-            <span>Higher quality ({maxQuality}%)</span>
-          </div>
-          {!isPremium && (
-            <div className="flex items-center text-xs text-orange-600 mt-2">
-              <AlertCircle className="w-3 h-3 mr-1" />
-              Free users: {FREEMIUM_LIMITS.minQuality}%-{FREEMIUM_LIMITS.maxQuality}% only
-            </div>
-          )}
-        </div>
-
-        {/* Max Dimensions */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Max Width (px)
-            </label>
-            <input
-              type="number"
-              min="1"
-              max={isPremium ? 10000 : FREEMIUM_LIMITS.maxResolution}
-              value={settings.maxWidth || ''}
-              onChange={(e) => handleMaxWidthChange(Number(e.target.value) || 0)}
-              placeholder="Original"
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            />
-            {!isPremium && (
-              <p className="text-xs text-orange-600 mt-1">
-                Max: {FREEMIUM_LIMITS.maxResolution}px (free)
-              </p>
-            )}
+      {/* Info Card */}
+      <div className="p-4 bg-gradient-to-r from-blue-50 to-purple-50 rounded-xl border border-blue-200">
+        <div className="flex items-start">
+          <div className="w-8 h-8 gradient-brand rounded-xl flex items-center justify-center mr-3 flex-shrink-0">
+            <Zap className="w-4 h-4 text-white" />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Max Height (px)
-            </label>
-            <input
-              type="number"
-              min="1"
-              max={isPremium ? 10000 : FREEMIUM_LIMITS.maxResolution}
-              value={settings.maxHeight || ''}
-              onChange={(e) => handleMaxHeightChange(Number(e.target.value) || 0)}
-              placeholder="Original"
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            />
-            {!isPremium && (
-              <p className="text-xs text-orange-600 mt-1">
-                Max: {FREEMIUM_LIMITS.maxResolution}px (free)
-              </p>
-            )}
+            <h4 className="font-medium text-neutral-800 mb-2">💡 Quick Tips</h4>
+            <ul className="text-sm text-neutral-700 space-y-1">
+              <li>• "Smaller Size" is perfect for social media and emails</li>
+              <li>• "Balanced" works great for most websites</li>
+              {isPremium ? (
+                <li>• "Best Quality" preserves maximum detail for printing</li>
+              ) : (
+                <li>• Upgrade to Premium for the highest quality options</li>
+              )}
+            </ul>
           </div>
-        </div>
-
-        <div className="bg-blue-50 rounded-lg p-4 border border-blue-200">
-          <p className="text-sm text-blue-800">
-            <strong>Tip:</strong> Leave dimensions empty to keep original size. 
-            Lower quality reduces file size but may affect image clarity.
-            {!isPremium && (
-              <span className="block mt-2 text-orange-700">
-                <strong>Free users:</strong> Limited to {FREEMIUM_LIMITS.maxResolution}x{FREEMIUM_LIMITS.maxResolution} resolution and {FREEMIUM_LIMITS.minQuality}-{FREEMIUM_LIMITS.maxQuality}% quality.
-              </span>
-            )}
-          </p>
         </div>
       </div>
     </div>

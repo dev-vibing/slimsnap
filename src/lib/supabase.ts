@@ -16,9 +16,9 @@ const mockSupabaseClient = {
       // Just return the subscription object
       return { data: { subscription: { unsubscribe: () => console.log('Mock: unsubscribed') } } };
     },
-    signInWithPassword: () => Promise.resolve({ error: new Error('Supabase not configured') }),
-    signUp: () => Promise.resolve({ error: new Error('Supabase not configured') }),
-    signInWithOAuth: () => Promise.resolve({ error: new Error('Supabase not configured') }),
+    signInWithPassword: () => Promise.resolve({ error: new Error('Authentication requires Supabase configuration. Please set up VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY environment variables.') }),
+    signUp: () => Promise.resolve({ error: new Error('Authentication requires Supabase configuration. Please set up VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY environment variables.') }),
+    signInWithOAuth: () => Promise.resolve({ error: new Error('Authentication requires Supabase configuration. Please set up VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY environment variables.') }),
     signOut: () => Promise.resolve({ error: new Error('Supabase not configured') }),
     refreshSession: () => Promise.resolve({ data: { session: null }, error: null })
   },
