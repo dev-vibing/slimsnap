@@ -41,54 +41,12 @@ export const supabase = (!supabaseUrl || !supabaseAnonKey)
       console.warn('Missing Supabase environment variables. Using mock client.');
       return mockSupabaseClient;
     })()
-  : (() => {
-      const client = createClient(supabaseUrl, supabaseAnonKey, {
-        auth: {
-          persistSession: true,
-          autoRefreshToken: true,
-          storage: localStorage,
-          storageKey: 'slimsnap.auth.token',
-        },
-      });
-
-      if (typeof window !== 'undefined') {
-        const tokenKey = 'slimsnap.auth.token';
-
-        client.auth.onAuthStateChange((_event, session) => {
-          if (session) {
-            const tokens = {
-              access_token: session.access_token,
-              refresh_token: session.refresh_token,
-            };
-            localStorage.setItem(tokenKey, JSON.stringify(tokens));
-          } else {
-            localStorage.removeItem(tokenKey);
-          }
-        });
-
-        (async () => {
-          const {
-            data: { session },
-          } = await client.auth.getSession();
-          if (!session) {
-            const raw = localStorage.getItem(tokenKey);
-            if (raw) {
-              try {
-                const { access_token, refresh_token } = JSON.parse(raw);
-                if (access_token && refresh_token) {
-                  await client.auth.setSession({ access_token, refresh_token });
-                }
-              } catch (err) {
-                console.error('Failed to restore auth tokens', err);
-                localStorage.removeItem(tokenKey);
-              }
-            }
-          }
-        })();
-      }
-
-      return client;
-    })();
+  : createClient(supabaseUrl, supabaseAnonKey, {
+      auth: {
+        persistSession: true,
+        autoRefreshToken: true,
+      },
+    });
 
 export interface UserProfile {
   id: string;
