@@ -101,8 +101,7 @@ export const UpgradeModal: React.FC<UpgradeModalProps> = ({
           </button>
           <button
             onClick={handleUpgrade}
-            disabled={!user}
-            className="flex-1 px-4 py-2 bg-gradient-to-r from-yellow-500 to-orange-500 text-white rounded-lg hover:from-yellow-600 hover:to-orange-600 transition-all duration-200 transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
+            className="flex-1 px-4 py-2 bg-gradient-to-r from-yellow-500 to-orange-500 text-white rounded-lg hover:from-yellow-600 hover:to-orange-600 transition-all duration-200 transform hover:scale-105"
           >
             {user ? 'Upgrade Now' : 'Sign In First'}
           </button>

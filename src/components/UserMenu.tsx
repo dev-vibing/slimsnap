@@ -15,17 +15,25 @@ export const UserMenu: React.FC = () => {
       
       const { error } = await signOut();
       
-      if (error) {
+      // Only show error if there's actually a real error (not session missing)
+      if (error && error.message && 
+          !error.message.includes('Auth session missing') &&
+          !error.message.includes('session_not_found')) {
         console.error('UserMenu: Sign out failed:', error);
-        // You could show a toast notification here if you want
         alert('Sign out failed. Please try again.');
       } else {
         console.log('UserMenu: Sign out successful');
         // The auth context will automatically update the UI
       }
-    } catch (error) {
-      console.error('UserMenu: Sign out exception:', error);
-      alert('Sign out failed. Please try again.');
+    } catch (error: any) {
+      // Don't show error for session missing cases
+      if (error?.message?.includes('Auth session missing') || 
+          error?.message?.includes('session_not_found')) {
+        console.log('UserMenu: Session already cleared');
+      } else {
+        console.error('UserMenu: Sign out exception:', error);
+        alert('Sign out failed. Please try again.');
+      }
     }
   };
 

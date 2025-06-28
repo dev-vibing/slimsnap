@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
+import React, { createContext, useContext, useState, useEffect } from 'react';
 import { User } from '@supabase/supabase-js';
 import { supabase, UserProfile } from '../lib/supabase';
 
@@ -20,88 +20,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
 
-  // Storage cleanup function
-  const clearStorage = () => {
-    try {
-      const keysToRemove: string[] = [];
-      
-      // Scan localStorage for Supabase auth keys
-      for (let i = 0; i < localStorage.length; i++) {
-        const key = localStorage.key(i);
-        if (key && (
-          key.startsWith('sb-') && key.includes('-auth-token') ||
-          key.includes('supabase.auth') ||
-          key.includes('supabase-auth-token')
-        )) {
-          keysToRemove.push(key);
-        }
-      }
-      
-      // Remove identified keys
-      keysToRemove.forEach(key => {
-        localStorage.removeItem(key);
-        console.log(`🔧 Cleared localStorage: ${key}`);
-      });
-      
-      // Clear common sessionStorage keys
-      const sessionKeys = ['supabase.auth.token', 'supabase-auth-token'];
-      sessionKeys.forEach(key => {
-        if (sessionStorage.getItem(key)) {
-          sessionStorage.removeItem(key);
-          console.log(`🔧 Cleared sessionStorage: ${key}`);
-        }
-      });
-      
-      console.log('✅ Auth storage cleanup completed');
-      
-    } catch (error) {
-      console.error('❌ Storage cleanup failed:', error);
-    }
-  };
-
-  // Professional auth initialization
   useEffect(() => {
     console.log('🚀 Initializing auth context');
     let isMounted = true;
     
-    // Profile fetching function (scoped to this effect)
-    const fetchProfile = async (userId: string) => {
-      console.log(`👤 Fetching profile for user: ${userId}`);
-      
-      try {
-        const { data, error } = await supabase
-          .from('profiles')
-          .select('*')
-          .eq('id', userId)
-          .single();
-
-        if (!isMounted) return;
-
-        if (error && error.code !== 'PGRST116') {
-          console.error('❌ Profile fetch error:', error);
-          setProfile(null);
-        } else if (data) {
-          console.log('✅ Profile loaded successfully');
-          setProfile(data);
-        } else {
-          console.log('ℹ️  No profile found, creating default');
-          setProfile({
-            id: userId,
-            email: '',
-            is_premium: false
-          });
-        }
-      } catch (error) {
-        console.error('❌ Profile fetch exception:', error);
-        setProfile(null);
-      } finally {
-        setLoading(false);
-      }
-    };
-    
     const initAuth = async () => {
       try {
-        // Get current session
         const { data: { session }, error } = await supabase.auth.getSession();
         
         if (!isMounted) return;
@@ -117,13 +41,40 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         if (session?.user) {
           console.log('✅ Valid session found');
           setUser(session.user);
-          await fetchProfile(session.user.id);
+          
+          // Fetch profile
+          try {
+            const { data: profileData, error: profileError } = await supabase
+              .from('profiles')
+              .select('*')
+              .eq('id', session.user.id)
+              .single();
+
+            if (profileError && profileError.code !== 'PGRST116') {
+              console.error('❌ Profile fetch error:', profileError);
+              setProfile(null);
+            } else if (profileData) {
+              console.log('✅ Profile loaded');
+              setProfile(profileData);
+            } else {
+              console.log('ℹ️ Creating default profile');
+              setProfile({
+                id: session.user.id,
+                email: session.user.email || '',
+                is_premium: false
+              });
+            }
+          } catch (profileError) {
+            console.error('❌ Profile fetch exception:', profileError);
+            setProfile(null);
+          }
         } else {
-          console.log('ℹ️  No session found');
+          console.log('ℹ️ No session found');
           setUser(null);
           setProfile(null);
-          setLoading(false);
         }
+        
+        setLoading(false);
       } catch (error) {
         console.error('❌ Auth initialization failed:', error);
         if (isMounted) {
@@ -136,46 +87,31 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
     initAuth();
 
-    // Professional auth state listener
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event: string, session: any) => {
         if (!isMounted) return;
         
-        console.log(`🔔 Auth event: ${event}`, session ? 'with session' : 'no session');
+        console.log(`🔔 Auth event: ${event}`);
         
-        switch (event) {
-          case 'SIGNED_IN':
-            if (session?.user) {
-              setUser(session.user);
-              await fetchProfile(session.user.id);
-            }
-            break;
-            
-          case 'SIGNED_OUT':
-            console.log('👋 Processing sign out event');
-            setUser(null);
-            setProfile(null);
-            setLoading(false);
-            clearStorage();
-            break;
-            
-          case 'TOKEN_REFRESHED':
-            if (session?.user) {
-              setUser(session.user);
-              // Don't refetch profile on token refresh
-              setLoading(false);
-            }
-            break;
-            
-          default:
-            if (session?.user) {
-              setUser(session.user);
-              await fetchProfile(session.user.id);
-            } else {
-              setUser(null);
-              setProfile(null);
-              setLoading(false);
-            }
+        if (event === 'SIGNED_OUT') {
+          setUser(null);
+          setProfile(null);
+          setLoading(false);
+        } else if (session?.user) {
+          setUser(session.user);
+          // Don't fetch profile again on every auth change to avoid loading loops
+          if (!profile) {
+            setProfile({
+              id: session.user.id,
+              email: session.user.email || '',
+              is_premium: false
+            });
+          }
+          setLoading(false);
+        } else {
+          setUser(null);
+          setProfile(null);
+          setLoading(false);
         }
       }
     );
@@ -184,68 +120,66 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       isMounted = false;
       subscription.unsubscribe();
     };
-  }, []); // Remove all dependencies to prevent infinite loops
+  }, []);
 
-  const signInWithEmail = useCallback(async (email: string, password: string) => {
+  const signOut = async () => {
+    console.log('🚪 Sign out initiated');
+    
+    try {
+      // Always clear UI state first
+      setUser(null);
+      setProfile(null);
+      setLoading(false);
+      
+      const { error } = await supabase.auth.signOut();
+      
+      // Handle specific auth errors that are expected
+      if (error) {
+        if (error.message?.includes('Auth session missing') || 
+            error.message?.includes('session_not_found') ||
+            error.name === 'AuthSessionMissingError') {
+          console.log('ℹ️ Session already cleared (expected)');
+          return { error: null }; // Treat as success since user is already signed out
+        } else {
+          console.error('❌ Supabase signOut error:', error);
+          return { error };
+        }
+      } else {
+        console.log('✅ Supabase signOut successful');
+        return { error: null };
+      }
+    } catch (err: any) {
+      console.error('❌ Sign out failed:', err);
+      
+      // If it's a session missing error, treat as success
+      if (err?.message?.includes('Auth session missing') || 
+          err?.message?.includes('session_not_found') ||
+          err?.name === 'AuthSessionMissingError') {
+        console.log('ℹ️ Session already cleared (caught exception)');
+        return { error: null };
+      }
+      
+      return { error: err };
+    }
+  };
+
+  const signInWithEmail = async (email: string, password: string) => {
     const { error } = await supabase.auth.signInWithPassword({ email, password });
     return { error };
-  }, []);
+  };
 
-  const signUpWithEmail = useCallback(async (email: string, password: string) => {
+  const signUpWithEmail = async (email: string, password: string) => {
     const { error } = await supabase.auth.signUp({ email, password });
     return { error };
-  }, []);
+  };
 
-  const signInWithGoogle = useCallback(async () => {
+  const signInWithGoogle = async () => {
     const { error } = await supabase.auth.signInWithOAuth({
       provider: 'google',
       options: { redirectTo: window.location.origin },
     });
     return { error };
-  }, []);
-
-  const signOut = useCallback(async () => {
-    console.log('🚪 Sign out initiated');
-    
-    try {
-      // Step 1: Optimistic UI update for instant feedback
-      setUser(null);
-      setProfile(null);
-      setLoading(false);
-      
-      // Step 2: Call Supabase signOut with explicit scope
-      console.log('📡 Calling Supabase signOut...');
-      const { error } = await supabase.auth.signOut({ scope: 'global' });
-      
-      if (error) {
-        console.error('❌ Supabase signOut error:', error);
-      } else {
-        console.log('✅ Supabase signOut successful');
-      }
-      
-      // Step 3: Aggressive storage cleanup (regardless of Supabase response)
-      console.log('🧹 Cleaning auth storage...');
-      clearStorage();
-      
-      // Step 4: Force session refresh to ensure clean state
-      console.log('🔄 Forcing session refresh...');
-      await supabase.auth.getSession();
-      
-      console.log('✅ Sign out process completed');
-      return { error: null };
-      
-    } catch (err) {
-      console.error('❌ Sign out failed:', err);
-      
-      // Fail-safe: ensure UI is cleared even if everything else fails
-      setUser(null);
-      setProfile(null);
-      setLoading(false);
-      clearStorage();
-      
-      return { error: err };
-    }
-  }, []);
+  };
 
   const value: AuthContextType = {
     user,
