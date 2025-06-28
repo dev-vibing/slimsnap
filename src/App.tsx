@@ -8,6 +8,7 @@ import { AuthModal } from './components/AuthModal';
 import { UpgradeModal } from './components/UpgradeModal';
 import { UserMenu } from './components/UserMenu';
 import { AdPlaceholder } from './components/AdPlaceholder';
+import { AuthCallback } from './components/AuthCallback';
 import { processImage, checkFreemiumLimits } from './utils/imageProcessor';
 import { useAuth } from './contexts/AuthContext';
 import { supabase } from './lib/supabase';
@@ -146,6 +147,9 @@ function App() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-brand-50 via-white to-accent-50 mesh-background">
+      {/* Auth Callback Handler */}
+      <AuthCallback />
+      
       {/* Header */}
       <header className="glass-white sticky top-0 z-20 border-b border-gray-200 shadow-soft">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
