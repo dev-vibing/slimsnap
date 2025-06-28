@@ -1,17 +1,19 @@
 import React from 'react';
 import { X, Crown, Check } from 'lucide-react';
-import { useAuth } from '../hooks/useAuth';
+import { useAuth } from '../contexts/AuthContext';
 
 interface UpgradeModalProps {
   isOpen: boolean;
   onClose: () => void;
   reason: string;
+  onSignInNeeded: () => void;
 }
 
 export const UpgradeModal: React.FC<UpgradeModalProps> = ({ 
   isOpen, 
   onClose, 
-  reason 
+  reason,
+  onSignInNeeded 
 }) => {
   const { user } = useAuth();
 
@@ -19,7 +21,8 @@ export const UpgradeModal: React.FC<UpgradeModalProps> = ({
 
   const handleUpgrade = () => {
     if (!user) {
-      alert('Please sign in first to upgrade to Premium');
+      onClose();
+      onSignInNeeded();
       return;
     }
 

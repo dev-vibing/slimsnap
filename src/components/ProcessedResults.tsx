@@ -1,9 +1,9 @@
 import React from 'react';
 import { Download, Archive, Trash2, CheckCircle, Lock } from 'lucide-react';
 import JSZip from 'jszip';
-import { ImageFile } from '../types';
+import { ImageFile, FREEMIUM_LIMITS } from '../types';
 import { formatFileSize, calculateSavings } from '../utils/imageProcessor';
-import { useAuth } from '../hooks/useAuth';
+import { useAuth } from '../contexts/AuthContext';
 
 interface ProcessedResultsProps {
   images: ImageFile[];

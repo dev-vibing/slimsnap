@@ -9,7 +9,7 @@ import { UpgradeModal } from './components/UpgradeModal';
 import { UserMenu } from './components/UserMenu';
 import { AdPlaceholder } from './components/AdPlaceholder';
 import { processImage, checkFreemiumLimits } from './utils/imageProcessor';
-import { useAuth } from './hooks/useAuth';
+import { useAuth } from './contexts/AuthContext';
 import { supabase } from './lib/supabase';
 
 function App() {
@@ -310,6 +310,7 @@ function App() {
         isOpen={showUpgradeModal}
         onClose={() => setShowUpgradeModal(false)}
         reason={upgradeReason}
+        onSignInNeeded={() => setShowAuthModal(true)}
       />
     </div>
   );

@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { User, Crown, LogOut, ChevronDown } from 'lucide-react';
-import { useAuth } from '../hooks/useAuth';
+import { useAuth } from '../contexts/AuthContext';
 
 export const UserMenu: React.FC = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -9,9 +9,28 @@ export const UserMenu: React.FC = () => {
   if (!user) return null;
 
   const handleSignOut = async () => {
-    await signOut();
-    setIsOpen(false);
+    try {
+      console.log('UserMenu: Sign out button clicked');
+      setIsOpen(false); // Close dropdown immediately
+      
+      const { error } = await signOut();
+      
+      if (error) {
+        console.error('UserMenu: Sign out failed:', error);
+        // You could show a toast notification here if you want
+        alert('Sign out failed. Please try again.');
+      } else {
+        console.log('UserMenu: Sign out successful');
+        // The auth context will automatically update the UI
+      }
+    } catch (error) {
+      console.error('UserMenu: Sign out exception:', error);
+      alert('Sign out failed. Please try again.');
+    }
   };
+
+  // Get email from user object as fallback if profile email is empty
+  const displayEmail = user.email || profile?.email || 'No email';
 
   return (
     <div className="relative">
@@ -24,7 +43,7 @@ export const UserMenu: React.FC = () => {
         </div>
         <div className="hidden sm:block text-left">
           <p className="text-sm font-medium text-gray-900 truncate max-w-32">
-            {user.email}
+            {displayEmail}
           </p>
           <div className="flex items-center">
             {isPremium && <Crown className="w-3 h-3 text-yellow-500 mr-1" />}
@@ -45,7 +64,7 @@ export const UserMenu: React.FC = () => {
           <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-200 z-20">
             <div className="p-3 border-b border-gray-100">
               <p className="text-sm font-medium text-gray-900 truncate">
-                {user.email}
+                {displayEmail}
               </p>
               <div className="flex items-center mt-1">
                 {isPremium && <Crown className="w-3 h-3 text-yellow-500 mr-1" />}

@@ -1,7 +1,7 @@
 import React, { useCallback, useState } from 'react';
 import { Upload, Image as ImageIcon, X, AlertCircle } from 'lucide-react';
 import { ImageFile, FREEMIUM_LIMITS } from '../types';
-import { useAuth } from '../hooks/useAuth';
+import { useAuth } from '../contexts/AuthContext';
 
 interface ImageUploadProps {
   images: ImageFile[];

@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { X, Mail, Key, User, Loader2, Chrome } from 'lucide-react';
-import { useAuth } from '../hooks/useAuth';
+import { useAuth } from '../contexts/AuthContext';
 
 interface AuthModalProps {
   isOpen: boolean;

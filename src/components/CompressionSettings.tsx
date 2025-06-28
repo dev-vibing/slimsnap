@@ -1,7 +1,7 @@
 import React from 'react';
 import { Settings, Zap, AlertCircle } from 'lucide-react';
 import { CompressionSettings, FREEMIUM_LIMITS } from '../types';
-import { useAuth } from '../hooks/useAuth';
+import { useAuth } from '../contexts/AuthContext';
 
 interface CompressionSettingsProps {
   settings: CompressionSettings;

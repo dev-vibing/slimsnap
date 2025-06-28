@@ -7,41 +7,73 @@ const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
 const mockSupabaseClient = {
   auth: {
     getSession: () => {
-      console.log('Mock: getSession called');
+      console.log('Mock: getSession called - Supabase not configured');
       return Promise.resolve({ data: { session: null }, error: null });
     },
     onAuthStateChange: (callback: any) => {
-      console.log('Mock: onAuthStateChange called');
+      console.log('Mock: onAuthStateChange called - Supabase not configured');
       // Don't call callback immediately to avoid race conditions
       // Just return the subscription object
       return { data: { subscription: { unsubscribe: () => console.log('Mock: unsubscribed') } } };
     },
-    signInWithPassword: () => Promise.resolve({ error: new Error('Supabase not configured') }),
-    signUp: () => Promise.resolve({ error: new Error('Supabase not configured') }),
-    signInWithOAuth: () => Promise.resolve({ error: new Error('Supabase not configured') }),
-    signOut: () => Promise.resolve({ error: new Error('Supabase not configured') }),
-    refreshSession: () => Promise.resolve({ data: { session: null }, error: null })
+    signInWithPassword: () => {
+      console.error('Mock: signInWithPassword called - Please configure Supabase environment variables');
+      return Promise.resolve({ error: new Error('Supabase not configured. Please set VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY in your .env.local file.') });
+    },
+    signUp: () => {
+      console.error('Mock: signUp called - Please configure Supabase environment variables');
+      return Promise.resolve({ error: new Error('Supabase not configured. Please set VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY in your .env.local file.') });
+    },
+    signInWithOAuth: () => {
+      console.error('Mock: signInWithOAuth called - Please configure Supabase environment variables');
+      return Promise.resolve({ error: new Error('Supabase not configured. Please set VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY in your .env.local file.') });
+    },
+    signOut: () => {
+      console.log('Mock: signOut called - Supabase not configured');
+      return Promise.resolve({ error: null });
+    },
+    refreshSession: () => {
+      console.log('Mock: refreshSession called - Supabase not configured');
+      return Promise.resolve({ data: { session: null }, error: null });
+    }
   },
   from: () => ({
     select: () => ({
       eq: () => ({
-        single: () => Promise.resolve({ data: null, error: { code: 'PGRST116', message: 'No rows found' } })
+        single: () => {
+          console.log('Mock: Database query called - Supabase not configured');
+          return Promise.resolve({ data: null, error: { code: 'PGRST116', message: 'No rows found (mock client)' } });
+        }
       })
     }),
     update: () => ({
       eq: () => ({
-        select: () => Promise.resolve({ data: [], error: new Error('Supabase not configured') })
+        select: () => {
+          console.log('Mock: Database update called - Supabase not configured');
+          return Promise.resolve({ data: [], error: new Error('Supabase not configured') });
+        }
       })
     })
   })
 } as any;
 
-export const supabase = (!supabaseUrl || !supabaseAnonKey) 
-  ? (() => {
-      console.warn('Missing Supabase environment variables. Using mock client.');
+// Check if environment variables are configured
+const isConfigured = !!(supabaseUrl && supabaseAnonKey);
+
+if (!isConfigured) {
+  console.error('⚠️  Supabase environment variables not found!');
+  console.error('Please create a .env.local file with the following variables:');
+  console.error('VITE_SUPABASE_URL=your-supabase-url');
+  console.error('VITE_SUPABASE_ANON_KEY=your-supabase-anon-key');
+  console.error('You can copy .env.example to .env.local and update the values.');
+}
+
+export const supabase = isConfigured 
+  ? createClient(supabaseUrl, supabaseAnonKey)
+  : (() => {
+      console.warn('Using mock Supabase client. Authentication will not work properly.');
       return mockSupabaseClient;
-    })()
-  : createClient(supabaseUrl, supabaseAnonKey);
+    })();
 
 export interface UserProfile {
   id: string;
