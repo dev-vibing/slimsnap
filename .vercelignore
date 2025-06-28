@@ -1,0 +1,9 @@
+server/
+node_modules/
+*.log
+.env
+.env.local
+.git/
+dist/
+README.md
+setup.md 

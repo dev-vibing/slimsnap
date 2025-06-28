@@ -67,8 +67,8 @@ export const UserMenu: React.FC = () => {
       
       console.log('UserMenu: Calling delete account API for user:', user.id);
       
-      // Call the delete account API on Express server
-      const response = await fetch('http://localhost:3001/delete-account', {
+      // Call the delete account API on Vercel serverless function
+      const response = await fetch('/api/delete-account', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

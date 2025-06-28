@@ -1,0 +1,14 @@
+{
+  "buildCommand": "npm run build",
+  "outputDirectory": "dist",
+  "framework": "vite",
+  "installCommand": "npm install",
+  "functions": {
+    "api/health.js": {
+      "maxDuration": 10
+    },
+    "api/delete-account.js": {
+      "maxDuration": 10
+    }
+  }
+} 
