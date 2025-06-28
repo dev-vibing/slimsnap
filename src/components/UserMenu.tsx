@@ -44,23 +44,23 @@ export const UserMenu: React.FC = () => {
     <div className="relative">
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="flex items-center space-x-2 px-3 py-2 rounded-lg hover:bg-gray-100 transition-colors duration-200"
+        className="flex items-center space-x-3 px-4 py-3 glass rounded-2xl hover:shadow-brand transition-all duration-300 transform hover:scale-105 group border border-gray-200"
       >
-        <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center">
-          <User className="w-4 h-4 text-white" />
+        <div className="w-10 h-10 bg-gradient-to-br from-brand-500 to-accent-500 rounded-full flex items-center justify-center shadow-brand group-hover:shadow-brand icon-glow">
+          <User className="w-5 h-5 text-white" />
         </div>
         <div className="hidden sm:block text-left">
-          <p className="text-sm font-medium text-gray-900 truncate max-w-32">
+          <p className="text-sm font-semibold text-gray-800 truncate max-w-32">
             {displayEmail}
           </p>
           <div className="flex items-center">
-            {isPremium && <Crown className="w-3 h-3 text-yellow-500 mr-1" />}
-            <p className="text-xs text-gray-600">
+            {isPremium && <Crown className="w-3 h-3 text-warning-500 mr-1" />}
+            <p className="text-xs text-gray-600 font-medium">
               {isPremium ? 'Premium' : 'Free'}
             </p>
           </div>
         </div>
-        <ChevronDown className="w-4 h-4 text-gray-500" />
+        <ChevronDown className={`w-4 h-4 text-gray-500 transition-transform duration-300 ${isOpen ? 'rotate-180' : ''}`} />
       </button>
 
       {isOpen && (
@@ -69,24 +69,40 @@ export const UserMenu: React.FC = () => {
             className="fixed inset-0 z-10" 
             onClick={() => setIsOpen(false)}
           />
-          <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-200 z-20">
-            <div className="p-3 border-b border-gray-100">
-              <p className="text-sm font-medium text-gray-900 truncate">
-                {displayEmail}
-              </p>
-              <div className="flex items-center mt-1">
-                {isPremium && <Crown className="w-3 h-3 text-yellow-500 mr-1" />}
-                <p className="text-xs text-gray-600">
-                  {isPremium ? 'Premium Account' : 'Free Account'}
-                </p>
+          <div className="absolute right-0 mt-3 w-72 card rounded-2xl border border-gray-200 z-20 overflow-hidden animate-slide-up shadow-large">
+            <div className="p-6 bg-gradient-to-r from-brand-50 to-accent-50 border-b border-gray-200">
+              <div className="flex items-center space-x-4">
+                <div className="w-14 h-14 bg-gradient-to-br from-brand-500 to-accent-500 rounded-full flex items-center justify-center shadow-brand icon-glow">
+                  <User className="w-7 h-7 text-white" />
+                </div>
+                <div className="flex-1">
+                  <p className="text-sm font-semibold text-gray-800 truncate">
+                    {displayEmail}
+                  </p>
+                  <div className="flex items-center mt-2">
+                    {isPremium ? (
+                      <div className="flex items-center">
+                        <Crown className="w-4 h-4 text-warning-500 mr-2" />
+                        <span className="badge-success">Premium Account</span>
+                      </div>
+                    ) : (
+                      <span className="bg-gray-100 text-gray-600 text-xs font-semibold px-3 py-1 rounded-full border border-gray-300">
+                        Free Account
+                      </span>
+                    )}
+                  </div>
+                </div>
               </div>
             </div>
+            
             <button
               onClick={handleSignOut}
-              className="w-full flex items-center px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors duration-200"
+              className="w-full flex items-center px-6 py-4 text-sm text-gray-700 hover:text-red-600 hover:bg-red-50 transition-all duration-300 group font-medium"
             >
-              <LogOut className="w-4 h-4 mr-2" />
-              Sign Out
+              <div className="w-10 h-10 bg-gradient-to-r from-red-500 to-red-600 rounded-full flex items-center justify-center mr-4 group-hover:shadow-medium transition-all duration-300">
+                <LogOut className="w-4 h-4 text-white" />
+              </div>
+              <span>Sign Out</span>
             </button>
           </div>
         </>

@@ -1,5 +1,5 @@
 import React, { useState, useCallback, useEffect } from 'react';
-import { Compass as Compress, Loader2, Shield, Crown, LogIn, CheckCircle, X } from 'lucide-react';
+import { Compass as Compress, Loader2, Shield, Crown, LogIn, CheckCircle, X, Sparkles } from 'lucide-react';
 import { ImageFile, CompressionSettings, FREEMIUM_LIMITS } from './types';
 import { ImageUpload } from './components/ImageUpload';
 import { CompressionSettingsPanel } from './components/CompressionSettings';
@@ -120,43 +120,47 @@ function App() {
       }
     });
     setImages([]);
-  }, [images]);
+  }, []);
 
   const unprocessedCount = images.filter(img => !img.processed).length;
   const canProcess = unprocessedCount > 0 && !isProcessing;
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 flex items-center justify-center">
-        <div className="flex items-center space-x-3">
-          <Loader2 className="w-8 h-8 animate-spin text-blue-600" />
-          <span className="text-lg text-gray-600">Loading...</span>
+      <div className="min-h-screen bg-gradient-to-br from-brand-50 via-white to-accent-50 flex items-center justify-center">
+        <div className="glass-white rounded-3xl p-12 shadow-large animate-slide-up">
+          <div className="flex flex-col items-center space-y-6">
+            <div className="relative">
+              <Loader2 className="w-16 h-16 animate-spin text-brand-500" />
+              <div className="absolute inset-0 w-16 h-16 rounded-full animate-pulse-soft bg-brand-100"></div>
+            </div>
+            <div className="text-center">
+              <h2 className="text-2xl font-bold text-gray-800 mb-2">Loading SlimSnap</h2>
+              <p className="text-gray-600">Preparing your image processing experience...</p>
+            </div>
+          </div>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-blue-50 font-sans">
-      {/* Sidebar Ad for Large Screens */}
-      <div className="hidden xl:block fixed right-4 top-1/2 transform -translate-y-1/2 z-10">
-        <AdPlaceholder id="ad-sidebar" width={160} height={600} />
-      </div>
-
+    <div className="min-h-screen bg-gradient-to-br from-brand-50 via-white to-accent-50 mesh-background">
       {/* Header */}
-      <header className="bg-white/80 backdrop-blur-md shadow-sm sticky top-0 z-20">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+      <header className="glass-white sticky top-0 z-20 border-b border-gray-200 shadow-soft">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
           <div className="flex items-center justify-between">
-            <div className="flex items-center">
-              <div className="w-12 h-12 bg-accent rounded-xl flex items-center justify-center mr-4">
-                <Compress className="w-7 h-7 text-white" />
+            <div className="flex items-center group">
+              <div className="w-16 h-16 bg-gradient-to-br from-brand-500 to-accent-500 rounded-3xl flex items-center justify-center mr-4 shadow-brand group-hover:scale-105 transition-transform duration-300 icon-glow">
+                <Compress className="w-9 h-9 text-white" />
               </div>
               <div>
-                <h1 className="text-2xl font-bold text-primary">
+                <h1 className="text-4xl font-black gradient-text text-shadow">
                   SlimSnap
                 </h1>
-                <p className="text-secondary text-sm font-medium">
-                  Fast Image Compressor & Resizer
+                <p className="text-gray-600 text-sm font-medium flex items-center mt-1">
+                  <Sparkles className="w-4 h-4 mr-2 text-brand-500" />
+                  Professional Image Optimization
                 </p>
               </div>
             </div>
@@ -167,10 +171,10 @@ function App() {
                   {!isPremium && (
                     <button
                       onClick={() => handleUpgradeNeeded('Unlock all premium features with unlimited uploads, full quality control, and ad-free experience.')}
-                      className="flex items-center px-4 py-2 bg-gradient-to-r from-yellow-400 to-orange-500 text-white rounded-lg hover:from-yellow-500 hover:to-orange-600 transition-all duration-200 transform hover:scale-105 shadow-sm"
+                      className="flex items-center px-6 py-3 bg-gradient-to-r from-warning-400 to-warning-500 text-white rounded-2xl hover:from-warning-500 hover:to-warning-600 transition-all duration-300 transform hover:scale-105 shadow-medium font-semibold gentle-bounce"
                     >
-                      <Crown className="w-4 h-4 mr-2" />
-                      Go Premium
+                      <Crown className="w-5 h-5 mr-2" />
+                      Upgrade to Pro
                     </button>
                   )}
                   <UserMenu />
@@ -178,9 +182,9 @@ function App() {
               ) : (
                 <button
                   onClick={() => setShowAuthModal(true)}
-                  className="flex items-center px-4 py-2 bg-accent hover:bg-accent-focus text-white rounded-lg transition-all duration-200 transform hover:scale-105"
+                  className="flex items-center px-6 py-3 bg-gradient-to-r from-brand-500 to-brand-600 text-white rounded-2xl hover:from-brand-600 hover:to-brand-700 transition-all duration-300 transform hover:scale-105 shadow-brand font-semibold gentle-bounce"
                 >
-                  <LogIn className="w-4 h-4 mr-2" />
+                  <LogIn className="w-5 h-5 mr-2" />
                   Sign In
                 </button>
               )}
@@ -191,32 +195,36 @@ function App() {
 
       {/* Upgrade Success Message */}
       {showUpgradeSuccess && (
-        <div className="bg-green-50 border border-green-200 rounded-lg p-4 mx-4 sm:mx-6 lg:mx-8 mt-4">
-          <div className="flex items-center">
-            <CheckCircle className="w-5 h-5 text-green-500 mr-3" />
-            <div>
-              <h3 className="text-sm font-medium text-green-800">
-                Welcome to Premium! 🎉
-              </h3>
-              <p className="text-sm text-green-700 mt-1">
-                Your account has been upgraded. You now have access to all premium features including unlimited uploads, full quality control, and ad-free experience.
-              </p>
+        <div className="mx-4 sm:mx-6 lg:mx-8 mt-6 animate-slide-up">
+          <div className="glass-white rounded-2xl p-6 border border-success-200 shadow-medium">
+            <div className="flex items-center">
+              <div className="w-12 h-12 bg-gradient-to-br from-success-400 to-success-500 rounded-2xl flex items-center justify-center mr-4 shadow-medium">
+                <CheckCircle className="w-6 h-6 text-white" />
+              </div>
+              <div className="flex-1">
+                <h3 className="text-lg font-bold text-gray-800 mb-2">
+                  🎉 Welcome to Premium!
+                </h3>
+                <p className="text-gray-600">
+                  Your account has been upgraded successfully. Enjoy unlimited uploads, full quality control, and an ad-free experience.
+                </p>
+              </div>
+              <button
+                onClick={() => setShowUpgradeSuccess(false)}
+                className="ml-4 text-gray-400 hover:text-gray-600 transition-colors duration-200 p-2 hover:bg-gray-100 rounded-full"
+              >
+                <X className="w-5 h-5" />
+              </button>
             </div>
-            <button
-              onClick={() => setShowUpgradeSuccess(false)}
-              className="ml-auto text-green-500 hover:text-green-700"
-            >
-              <X className="w-5 h-5" />
-            </button>
           </div>
         </div>
       )}
 
       {/* Main Content */}
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="space-y-8">
+        <div className="space-y-12">
           {/* Upload Section */}
-          <section>
+          <section className="animate-slide-up" style={{ animationDelay: '0.1s' }}>
             <ImageUpload
               images={images}
               onImagesAdd={handleImagesAdd}
@@ -225,16 +233,9 @@ function App() {
             />
           </section>
 
-          {/* Ad Rectangle */}
-          {!isPremium && (
-            <div className="flex justify-center">
-              <AdPlaceholder id="ad-rectangle" width={300} height={250} />
-            </div>
-          )}
-
           {/* Settings and Process Section */}
           {images.length > 0 && (
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 animate-slide-up" style={{ animationDelay: '0.3s' }}>
               <div className="lg:col-span-2">
                 <CompressionSettingsPanel
                   settings={settings}
@@ -246,27 +247,27 @@ function App() {
                 <button
                   onClick={handleProcessImages}
                   disabled={!canProcess}
-                  className={`w-full flex items-center justify-center px-6 py-4 rounded-xl text-white font-semibold transition-all duration-200 transform ${
+                  className={`w-full flex items-center justify-center px-8 py-6 rounded-3xl text-white font-bold text-lg transition-all duration-300 transform ${
                     canProcess
-                      ? 'bg-gradient-to-r from-green-600 to-teal-600 hover:from-green-700 hover:to-teal-700 hover:scale-105 shadow-lg'
-                      : 'bg-gray-400 cursor-not-allowed'
+                      ? 'bg-gradient-to-r from-success-500 to-brand-500 hover:from-success-600 hover:to-brand-600 hover:scale-105 shadow-large gentle-bounce'
+                      : 'bg-gray-400 cursor-not-allowed opacity-50'
                   }`}
                 >
                   {isProcessing ? (
                     <>
-                      <Loader2 className="w-5 h-5 mr-3 animate-spin" />
-                      Processing...
+                      <Loader2 className="w-6 h-6 mr-3 animate-spin" />
+                      Processing Images...
                     </>
                   ) : (
                     <>
-                      <Compress className="w-5 h-5 mr-3" />
-                      Compress & Resize ({unprocessedCount})
+                      <Compress className="w-6 h-6 mr-3" />
+                      Process Images ({unprocessedCount})
                     </>
                   )}
                 </button>
                 {unprocessedCount === 0 && images.length > 0 && (
-                  <p className="text-center text-sm text-gray-600 mt-2">
-                    All images processed!
+                  <p className="text-center text-sm text-brand-600 mt-3 font-semibold">
+                    ✨ All images processed!
                   </p>
                 )}
               </div>
@@ -274,29 +275,40 @@ function App() {
           )}
 
           {/* Results Section */}
-          <ProcessedResults
-            images={images}
-            onClearAll={handleClearAll}
-            onUpgradeNeeded={handleUpgradeNeeded}
-          />
+          <div className="animate-slide-up" style={{ animationDelay: '0.4s' }}>
+            <ProcessedResults
+              images={images}
+              onClearAll={handleClearAll}
+              onUpgradeNeeded={handleUpgradeNeeded}
+            />
+          </div>
+
+          {/* Subtle Footer Ad - Only for free users, very discreet */}
+          {!isPremium && (
+            <div className="flex justify-center mt-16 animate-slide-up" style={{ animationDelay: '0.5s' }}>
+              <div className="bg-gray-50 rounded-xl p-3 border border-gray-200 opacity-60 hover:opacity-80 transition-opacity duration-300">
+                <div className="text-center">
+                  <p className="text-xs text-gray-500 mb-2">Advertisement</p>
+                  <AdPlaceholder id="ad-footer" width={728} height={90} />
+                </div>
+              </div>
+            </div>
+          )}
         </div>
       </main>
 
       {/* Footer */}
-      <footer className="bg-white border-t border-gray-100 mt-16">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-          <div className="flex flex-col items-center space-y-4">
-            <div className="flex items-center justify-center text-sm text-gray-600">
-              <Shield className="w-4 h-4 mr-2 text-green-500" />
-              No images are stored. Everything runs in your browser.
+      <footer className="glass-white border-t border-gray-200 mt-16 shadow-soft">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          <div className="flex flex-col items-center space-y-6">
+            <div className="flex items-center justify-center text-gray-600 glass rounded-full px-6 py-3 shadow-soft">
+              <Shield className="w-5 h-5 mr-3 text-success-500" />
+              <span className="font-medium">🔒 Privacy First - No data stored, everything runs locally</span>
             </div>
-            
-            {/* Footer Ad */}
-            {!isPremium && (
-              <div className="flex justify-center">
-                <AdPlaceholder id="ad-footer" width={728} height={90} />
-              </div>
-            )}
+
+            <div className="text-center text-gray-500 text-sm">
+              <p>Built with ❤️ for modern image optimization</p>
+            </div>
           </div>
         </div>
       </footer>
