@@ -12,8 +12,10 @@ const mockSupabaseClient = {
     },
     onAuthStateChange: (callback: any) => {
       console.log('Mock: onAuthStateChange called - Supabase not configured');
-      // Don't call callback immediately to avoid race conditions
-      // Just return the subscription object
+      // Call the callback with no session to ensure loading state is cleared
+      setTimeout(() => {
+        callback('SIGNED_OUT', null);
+      }, 100);
       return { data: { subscription: { unsubscribe: () => console.log('Mock: unsubscribed') } } };
     },
     signInWithPassword: () => {
