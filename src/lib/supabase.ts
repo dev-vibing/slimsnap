@@ -41,12 +41,42 @@ export const supabase = (!supabaseUrl || !supabaseAnonKey)
       console.warn('Missing Supabase environment variables. Using mock client.');
       return mockSupabaseClient;
     })()
-  : createClient(supabaseUrl, supabaseAnonKey, {
-      auth: {
-        persistSession: true,
-        autoRefreshToken: true,
-      },
-    });
+  : (() => {
+      const client = createClient(supabaseUrl, supabaseAnonKey, {
+        auth: {
+          persistSession: true,
+          autoRefreshToken: true,
+        },
+      });
+
+      if (typeof window !== 'undefined') {
+        const storageKey = 'sb-sl-session';
+
+        client.auth.onAuthStateChange((_event, session) => {
+          if (session) {
+            localStorage.setItem(storageKey, JSON.stringify(session));
+          } else {
+            localStorage.removeItem(storageKey);
+          }
+        });
+
+        (async () => {
+          const { data: { session } } = await client.auth.getSession();
+          if (!session) {
+            const raw = localStorage.getItem(storageKey);
+            if (raw) {
+              try {
+                await client.auth.setSession(JSON.parse(raw));
+              } catch (err) {
+                console.error('Failed to restore session from storage', err);
+              }
+            }
+          }
+        })();
+      }
+
+      return client;
+    })();
 
 export interface UserProfile {
   id: string;
