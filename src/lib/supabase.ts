@@ -1,7 +1,7 @@
 import { createClient } from '@supabase/supabase-js';
 
-const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
+const supabaseUrl = import.meta.env.VITE_SUPABASE_URL as string | undefined;
+const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY as string | undefined;
 
 // Create a mock client for development when environment variables are missing
 const mockSupabaseClient = {
@@ -36,12 +36,17 @@ const mockSupabaseClient = {
   })
 } as any;
 
-export const supabase = (!supabaseUrl || !supabaseAnonKey) 
+export const supabase = (!supabaseUrl || !supabaseAnonKey)
   ? (() => {
       console.warn('Missing Supabase environment variables. Using mock client.');
       return mockSupabaseClient;
     })()
-  : createClient(supabaseUrl, supabaseAnonKey);
+  : createClient(supabaseUrl, supabaseAnonKey, {
+      auth: {
+        persistSession: true,
+        autoRefreshToken: true,
+      },
+    });
 
 export interface UserProfile {
   id: string;
