@@ -52,56 +52,56 @@ export const CompressionSettingsPanel: React.FC<CompressionSettingsProps> = ({
   const maxQuality = isPremium ? 100 : FREEMIUM_LIMITS.maxQuality;
 
   return (
-    <div className="card rounded-3xl p-8 shadow-medium">
-      <div className="flex items-center mb-8 group">
-        <div className="w-12 h-12 bg-gradient-to-br from-brand-500 to-accent-500 rounded-2xl flex items-center justify-center mr-4 shadow-brand group-hover:scale-105 transition-all duration-300 icon-glow">
-          <Settings className="w-6 h-6 text-white" />
+    <div className="card rounded-2xl sm:rounded-3xl p-4 sm:p-8 shadow-medium">
+      <div className="flex items-center mb-6 sm:mb-8 group">
+        <div className="w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-br from-brand-500 to-accent-500 rounded-xl sm:rounded-2xl flex items-center justify-center mr-3 sm:mr-4 shadow-brand group-hover:scale-105 transition-all duration-300 icon-glow">
+          <Settings className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
         </div>
         <div>
-          <h2 className="text-2xl font-bold text-gray-800 text-shadow">Compression Settings</h2>
-          <p className="text-gray-600 text-sm flex items-center mt-1">
+          <h2 className="text-xl sm:text-2xl font-bold text-gray-800 text-shadow">Compression Settings</h2>
+          <p className="text-gray-600 text-xs sm:text-sm items-center mt-1 hidden sm:flex">
             <Target className="w-4 h-4 mr-2 text-brand-500" />
             Fine-tune your image optimization
           </p>
         </div>
       </div>
 
-      <div className="space-y-8">
+      <div className="space-y-6 sm:space-y-8">
         {/* Quality Slider */}
-        <div className="bg-brand-50 rounded-2xl p-6 border border-brand-100">
-          <div className="flex items-center justify-between mb-4">
-            <label className="text-lg font-semibold text-gray-800 flex items-center">
-              <Zap className="w-5 h-5 mr-2 text-warning-500" />
+        <div className="bg-brand-50 rounded-xl sm:rounded-2xl p-4 sm:p-6 border border-brand-100">
+          <div className="flex items-center justify-between mb-3 sm:mb-4">
+            <label className="text-base sm:text-lg font-semibold text-gray-800 flex items-center">
+              <Zap className="w-4 h-4 sm:w-5 sm:h-5 mr-2 text-warning-500" />
               Quality
             </label>
-            <div className="flex items-center bg-white rounded-full px-4 py-2 shadow-soft border border-brand-200">
-              <Zap className="w-4 h-4 text-warning-500 mr-2" />
-              <span className="text-lg font-bold text-gray-800">
+            <div className="flex items-center bg-white rounded-full px-3 sm:px-4 py-1 sm:py-2 shadow-soft border border-brand-200">
+              <Zap className="w-3 h-3 sm:w-4 sm:h-4 text-warning-500 mr-1 sm:mr-2" />
+              <span className="text-sm sm:text-lg font-bold text-gray-800">
                 {settings.quality}%
               </span>
             </div>
           </div>
           
-          <div className="relative mb-4">
+          <div className="relative mb-3 sm:mb-4">
             <input
               type="range"
               min={minQuality}
               max={maxQuality}
               value={Math.max(minQuality, Math.min(maxQuality, settings.quality))}
               onChange={(e) => handleQualityChange(Number(e.target.value))}
-              className="w-full h-3 bg-gray-200 rounded-lg appearance-none cursor-pointer slider"
+              className="w-full h-2 sm:h-3 bg-gray-200 rounded-lg appearance-none cursor-pointer slider"
             />
           </div>
           
-          <div className="flex justify-between text-sm text-gray-500 mb-3">
-            <span>Lower quality ({minQuality}%)</span>
-            <span>Higher quality ({maxQuality}%)</span>
+          <div className="flex justify-between text-xs sm:text-sm text-gray-500 mb-3">
+            <span>Lower ({minQuality}%)</span>
+            <span>Higher ({maxQuality}%)</span>
           </div>
           
           {!isPremium && (
             <div className="inline-flex items-center bg-warning-50 border border-warning-200 rounded-full px-3 py-2">
-              <AlertTriangle className="w-4 h-4 mr-2 text-warning-600" />
-              <span className="text-warning-700 text-sm font-medium">
+              <AlertTriangle className="w-3 h-3 sm:w-4 sm:h-4 mr-2 text-warning-600" />
+              <span className="text-warning-700 text-xs sm:text-sm font-medium">
                 Free users: {FREEMIUM_LIMITS.minQuality}%-{FREEMIUM_LIMITS.maxQuality}% only
               </span>
             </div>
@@ -109,15 +109,15 @@ export const CompressionSettingsPanel: React.FC<CompressionSettingsProps> = ({
         </div>
 
         {/* Max Dimensions */}
-        <div className="bg-accent-50 rounded-2xl p-6 border border-accent-100">
-          <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center">
-            <Sliders className="w-5 h-5 mr-2 text-accent-500" />
+        <div className="bg-accent-50 rounded-xl sm:rounded-2xl p-4 sm:p-6 border border-accent-100">
+          <h3 className="text-base sm:text-lg font-semibold text-gray-800 mb-3 sm:mb-4 flex items-center">
+            <Sliders className="w-4 h-4 sm:w-5 sm:h-5 mr-2 text-accent-500" />
             Resolution Limits
           </h3>
           
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
             <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-3">
+              <label className="block text-sm font-semibold text-gray-700 mb-2 sm:mb-3">
                 Max Width (px)
               </label>
               <input
@@ -127,17 +127,17 @@ export const CompressionSettingsPanel: React.FC<CompressionSettingsProps> = ({
                 value={settings.maxWidth || ''}
                 onChange={(e) => handleMaxWidthChange(Number(e.target.value) || 0)}
                 placeholder="Original"
-                className="input-modern w-full"
+                className="input-modern w-full text-sm sm:text-base"
               />
               {!isPremium && (
-                <p className="text-sm text-warning-600 mt-2 flex items-center">
+                <p className="text-xs sm:text-sm text-warning-600 mt-2 flex items-center">
                   <AlertTriangle className="w-3 h-3 mr-1" />
                   Max: {FREEMIUM_LIMITS.maxResolution}px (free)
                 </p>
               )}
             </div>
             <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-3">
+              <label className="block text-sm font-semibold text-gray-700 mb-2 sm:mb-3">
                 Max Height (px)
               </label>
               <input
@@ -147,10 +147,10 @@ export const CompressionSettingsPanel: React.FC<CompressionSettingsProps> = ({
                 value={settings.maxHeight || ''}
                 onChange={(e) => handleMaxHeightChange(Number(e.target.value) || 0)}
                 placeholder="Original"
-                className="input-modern w-full"
+                className="input-modern w-full text-sm sm:text-base"
               />
               {!isPremium && (
-                <p className="text-sm text-warning-600 mt-2 flex items-center">
+                <p className="text-xs sm:text-sm text-warning-600 mt-2 flex items-center">
                   <AlertTriangle className="w-3 h-3 mr-1" />
                   Max: {FREEMIUM_LIMITS.maxResolution}px (free)
                 </p>
@@ -160,15 +160,15 @@ export const CompressionSettingsPanel: React.FC<CompressionSettingsProps> = ({
         </div>
 
         {/* Tips Section */}
-        <div className="bg-gradient-to-r from-success-50 to-brand-50 rounded-2xl p-6 border border-success-200 relative overflow-hidden">
+        <div className="bg-gradient-to-r from-success-50 to-brand-50 rounded-xl sm:rounded-2xl p-4 sm:p-6 border border-success-200 relative overflow-hidden">
           <div className="relative z-10">
-            <p className="text-gray-700 leading-relaxed mb-4">
+            <p className="text-gray-700 leading-relaxed mb-3 sm:mb-4 text-sm sm:text-base">
               <span className="text-brand-600 font-semibold">💡 Pro Tip:</span> Leave dimensions empty to keep original size. 
               Lower quality reduces file size but may affect image clarity.
             </p>
             {!isPremium && (
-              <div className="bg-white/80 backdrop-blur-sm rounded-xl p-4 border border-warning-200">
-                <p className="text-warning-700 font-medium">
+              <div className="bg-white/80 backdrop-blur-sm rounded-xl p-3 sm:p-4 border border-warning-200">
+                <p className="text-warning-700 font-medium text-xs sm:text-base">
                   <span className="text-gray-800 font-semibold">⚡ Free Limits:</span> Max resolution {FREEMIUM_LIMITS.maxResolution}x{FREEMIUM_LIMITS.maxResolution}px • Quality {FREEMIUM_LIMITS.minQuality}-{FREEMIUM_LIMITS.maxQuality}%
                 </p>
               </div>

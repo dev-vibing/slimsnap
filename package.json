@@ -15,6 +15,7 @@
   "dependencies": {
     "@supabase/supabase-js": "^2.39.0",
     "@vercel/node": "^3.0.0",
+    "browser-image-compression": "^2.0.2",
     "cors": "^2.8.5",
     "dotenv": "^16.4.5",
     "express": "^4.19.2",
