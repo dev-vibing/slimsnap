@@ -1,5 +1,5 @@
 import React from 'react';
-import { Settings, Zap, AlertTriangle, Sliders, Target } from 'lucide-react';
+import { Settings, Zap, AlertTriangle, Sliders, Target, Lightbulb } from 'lucide-react';
 import { CompressionSettings, FREEMIUM_LIMITS } from '../types';
 import { useAuth } from '../contexts/AuthContext';
 
@@ -52,13 +52,13 @@ export const CompressionSettingsPanel: React.FC<CompressionSettingsProps> = ({
   const maxQuality = isPremium ? 100 : FREEMIUM_LIMITS.maxQuality;
 
   return (
-    <div className="card rounded-2xl sm:rounded-3xl p-4 sm:p-8 shadow-medium">
+    <div className="holographic-card rounded-2xl sm:rounded-3xl p-4 sm:p-8 shadow-ultra tech-grid-overlay hover-lift">
       <div className="flex items-center mb-6 sm:mb-8 group">
-        <div className="w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-br from-brand-500 to-accent-500 rounded-xl sm:rounded-2xl flex items-center justify-center mr-3 sm:mr-4 shadow-brand group-hover:scale-105 transition-all duration-300 icon-glow">
+        <div className="w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-br from-brand-500 to-accent-500 rounded-xl sm:rounded-2xl flex items-center justify-center mr-3 sm:mr-4 shadow-ultra group-hover:scale-105 transition-all duration-300 icon-glow quantum-glow energy-pulse">
           <Settings className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
         </div>
         <div>
-          <h2 className="text-xl sm:text-2xl font-bold text-gray-800 text-shadow">Compression Settings</h2>
+          <h2 className="text-xl sm:text-2xl font-bold text-gray-800 cyber-text hologram-text">Compression Settings</h2>
           <p className="text-gray-600 text-xs sm:text-sm items-center mt-1 hidden sm:flex">
             <Target className="w-4 h-4 mr-2 text-brand-500" />
             Fine-tune your image optimization
@@ -68,13 +68,13 @@ export const CompressionSettingsPanel: React.FC<CompressionSettingsProps> = ({
 
       <div className="space-y-6 sm:space-y-8">
         {/* Quality Slider */}
-        <div className="bg-brand-50 rounded-xl sm:rounded-2xl p-4 sm:p-6 border border-brand-100">
+        <div className="neo-glass rounded-xl sm:rounded-2xl p-4 sm:p-6 border border-brand-100 hover-lift geometric-accent">
           <div className="flex items-center justify-between mb-3 sm:mb-4">
             <label className="text-base sm:text-lg font-semibold text-gray-800 flex items-center">
               <Zap className="w-4 h-4 sm:w-5 sm:h-5 mr-2 text-warning-500" />
               Quality
             </label>
-            <div className="flex items-center bg-white rounded-full px-3 sm:px-4 py-1 sm:py-2 shadow-soft border border-brand-200">
+            <div className="flex items-center tech-button rounded-full px-3 sm:px-4 py-1 sm:py-2 shadow-ultra border border-brand-200 hover-glow">
               <Zap className="w-3 h-3 sm:w-4 sm:h-4 text-warning-500 mr-1 sm:mr-2" />
               <span className="text-sm sm:text-lg font-bold text-gray-800">
                 {settings.quality}%
@@ -109,7 +109,7 @@ export const CompressionSettingsPanel: React.FC<CompressionSettingsProps> = ({
         </div>
 
         {/* Max Dimensions */}
-        <div className="bg-accent-50 rounded-xl sm:rounded-2xl p-4 sm:p-6 border border-accent-100">
+        <div className="neo-glass rounded-xl sm:rounded-2xl p-4 sm:p-6 border border-accent-100 hover-lift geometric-accent">
           <h3 className="text-base sm:text-lg font-semibold text-gray-800 mb-3 sm:mb-4 flex items-center">
             <Sliders className="w-4 h-4 sm:w-5 sm:h-5 mr-2 text-accent-500" />
             Resolution Limits
@@ -160,16 +160,22 @@ export const CompressionSettingsPanel: React.FC<CompressionSettingsProps> = ({
         </div>
 
         {/* Tips Section */}
-        <div className="bg-gradient-to-r from-success-50 to-brand-50 rounded-xl sm:rounded-2xl p-4 sm:p-6 border border-success-200 relative overflow-hidden">
+        <div className="holographic-card rounded-xl sm:rounded-2xl p-4 sm:p-6 border border-success-200 relative overflow-hidden hover-lift tech-grid-overlay">
           <div className="relative z-10">
             <p className="text-gray-700 leading-relaxed mb-3 sm:mb-4 text-sm sm:text-base">
-              <span className="text-brand-600 font-semibold">💡 Pro Tip:</span> Leave dimensions empty to keep original size. 
+              <span className="text-brand-600 font-semibold flex items-center">
+                <Lightbulb className="w-4 h-4 mr-1" />
+                Pro Tip:
+              </span> Leave dimensions empty to keep original size. 
               Lower quality reduces file size but may affect image clarity.
             </p>
             {!isPremium && (
-              <div className="bg-white/80 backdrop-blur-sm rounded-xl p-3 sm:p-4 border border-warning-200">
+              <div className="ultra-glass rounded-xl p-3 sm:p-4 border border-warning-200 hover-glow">
                 <p className="text-warning-700 font-medium text-xs sm:text-base">
-                  <span className="text-gray-800 font-semibold">⚡ Free Limits:</span> Max resolution {FREEMIUM_LIMITS.maxResolution}x{FREEMIUM_LIMITS.maxResolution}px • Quality {FREEMIUM_LIMITS.minQuality}-{FREEMIUM_LIMITS.maxQuality}%
+                  <span className="text-gray-800 font-semibold flex items-center">
+                    <Zap className="w-4 h-4 mr-1" />
+                    Free Limits:
+                  </span> Max resolution {FREEMIUM_LIMITS.maxResolution}x{FREEMIUM_LIMITS.maxResolution}px • Quality {FREEMIUM_LIMITS.minQuality}-{FREEMIUM_LIMITS.maxQuality}%
                 </p>
               </div>
             )}

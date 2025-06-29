@@ -1,0 +1,20 @@
+User-agent: *
+Allow: /
+
+# Allow Google AdSense bot
+User-agent: Mediapartners-Google
+Allow: /
+
+# Allow Google AdBot
+User-agent: AdsBot-Google
+Allow: /
+
+# Allow Google AdBot Mobile
+User-agent: AdsBot-Google-Mobile
+Allow: /
+
+# Sitemap location
+Sitemap: https://slimsnap.app/sitemap.xml
+
+# Additional crawl delay (optional - can be adjusted)
+Crawl-delay: 1 
